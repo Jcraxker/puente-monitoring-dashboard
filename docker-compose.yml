@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16
+    container_name: puente-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-puente}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-puente_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-puente_dashboard}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-puente} -d ${POSTGRES_DB:-puente_dashboard}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:
