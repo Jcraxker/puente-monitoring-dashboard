@@ -104,4 +104,30 @@ async function getActividad(req, res) {
   }
 }
 
-module.exports = { listActividades, getActividad };
+async function createActividad(req, res) {
+  try {
+    if (!req.body.fecha_actividades) {
+      return res.status(400).json({ error: 'fecha_actividades es requerida' });
+    }
+    const { rows } = await pool.query(
+      `INSERT INTO actividades
+         (fecha_actividades, departamento_id, personal_id,
+          tipo_actividad, ubicacion, resumen_actividad)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [
+        req.body.fecha_actividades,
+        req.body.departamento_id,
+        req.body.personal_id,
+        req.body.tipo_actividad,
+        req.body.ubicacion,
+        req.body.resumen_actividad,
+      ]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error('createActividad error', err);
+    res.status(500).json({ error: 'Error al crear actividad' });
+  }
+}
+module.exports = { listActividades, getActividad, createActividad };

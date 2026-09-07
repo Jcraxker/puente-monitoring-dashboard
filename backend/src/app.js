@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
-const { listActividades, getActividad } = require('./routes/actividades');
+const { listActividades, getActividad, createActividad } = require('./routes/actividades');
 
 const app = express();
 
@@ -19,5 +19,6 @@ app.get('/health', async (req, res) => {
 
 app.get('/api/actividades', listActividades);
 app.get('/api/actividades/:id', getActividad);
+app.post('/api/actividades', createActividad);
 
 module.exports = app;
