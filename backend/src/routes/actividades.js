@@ -130,4 +130,63 @@ async function createActividad(req, res) {
     res.status(500).json({ error: 'Error al crear actividad' });
   }
 }
-module.exports = { listActividades, getActividad, createActividad };
+
+async function updateActividad(req, res) {
+  try {
+    if (!req.body.fecha_actividades) {
+      return res.status(400).json({ error: 'fecha_actividades es requerida' });
+    }
+    const { rows } = await pool.query(
+      `UPDATE actividades
+         
+      SET
+        fecha_actividades = $1, 
+        departamento_id = $2, 
+        personal_id = $3,
+        tipo_actividad = $4, 
+        ubicacion = $5, 
+        resumen_actividad = $6
+      WHERE id = $7
+       RETURNING *`,
+      [
+        req.body.fecha_actividades,
+        req.body.departamento_id,
+        req.body.personal_id,
+        req.body.tipo_actividad,
+        req.body.ubicacion,
+        req.body.resumen_actividad,
+        req.params.id
+      ]
+    );
+    if (!rows.length) {
+      return res.status(404).json({ error: 'Actividad no encontrada' });
+    }
+    res.status(200).json(rows[0]);
+  } catch (err) {
+    console.error('updateActividad error', err);
+    res.status(500).json({ error: 'Error al actualizar actividad' });
+  }
+}
+
+async function deleteActividad(req, res) {
+  try {
+    const {rows} = await pool.query(
+    `UPDATE actividades
+    
+    SET
+      estado_validacion = 'anulado'
+      WHERE id = $1
+      RETURNING *`,
+    [req.params.id]
+  );
+  if (!rows.length) {
+    return res.status(404).json({ error: 'Actividad no encontrada'});
+  }
+  res.status(200).json(rows[0]);
+  } catch (err) {
+    console.error('deleteActividad error', err);
+    res.status(500).json({error: 'Error al anular la actividad'});
+  }
+  
+}
+module.exports = { listActividades, getActividad, createActividad, updateActividad, deleteActividad };
