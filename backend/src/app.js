@@ -42,8 +42,41 @@ app.get('/api/actividades', authRequired, listActividades);
 app.get('/api/actividades/:id', authRequired, getActividad);
 app.put('/api/actividades/:id/anular', authRequired, requireRole('monitor'), deleteActividad);
 
+const { listViaticos } = require('./routes/viaticos');
+const { catalogos, registros } = require('./routes/registros');
+const { kpis } = require('./routes/kpis');
+
 app.post('/api/sync', authRequired, requireRole('monitor'), syncNow);
 app.get('/api/sync/estado', authRequired, syncEstado);
+
+app.get('/api/viaticos', authRequired, listViaticos);
+
+app.get('/api/catalogos', authRequired, catalogos);
+app.get('/api/registros', authRequired, registros);
+app.get('/api/kpis', authRequired, kpis);
+
+// Proxy de fotos KoBo (el token nunca sale del backend)
+app.get('/api/actividades/:id/foto/:n', authRequired, async (req, res) => {
+  try {
+    const col = req.params.n === '2' ? 'fotografia_2_url' : 'fotografia_1_url';
+    const { rows } = await pool.query(
+      `SELECT ${col} AS url FROM actividades WHERE id = $1`,
+      [req.params.id]
+    );
+    if (!rows.length || !rows[0].url) return res.status(404).json({ error: 'Foto no encontrada' });
+    const upstream = await fetch(rows[0].url, {
+      headers: { Authorization: `Token ${process.env.KOBO_TOKEN}` },
+    });
+    if (!upstream.ok) return res.status(502).json({ error: 'No se pudo obtener la foto' });
+    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    const buf = Buffer.from(await upstream.arrayBuffer());
+    res.send(buf);
+  } catch (err) {
+    console.error('foto error', err.message);
+    res.status(500).json({ error: 'Error al obtener foto' });
+  }
+});
 
 // Frontend estatico (misma URL = sin CORS en produccion)
 const dist = path.join(__dirname, '..', '..', 'frontend', 'dist');
