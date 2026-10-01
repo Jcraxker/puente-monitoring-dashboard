@@ -45,6 +45,7 @@ app.put('/api/actividades/:id/anular', authRequired, requireRole('monitor'), del
 const { listViaticos } = require('./routes/viaticos');
 const { catalogos, registros } = require('./routes/registros');
 const { kpis } = require('./routes/kpis');
+const { siguiente: siguienteFolio } = require('./routes/correlativos');
 
 app.post('/api/sync', authRequired, requireRole('monitor'), syncNow);
 app.get('/api/sync/estado', authRequired, syncEstado);
@@ -54,6 +55,7 @@ app.get('/api/viaticos', authRequired, listViaticos);
 app.get('/api/catalogos', authRequired, catalogos);
 app.get('/api/registros', authRequired, registros);
 app.get('/api/kpis', authRequired, kpis);
+app.post('/api/correlativos/siguiente', authRequired, siguienteFolio);
 
 // Proxy de fotos KoBo (el token nunca sale del backend)
 app.get('/api/actividades/:id/foto/:n', authRequired, async (req, res) => {
