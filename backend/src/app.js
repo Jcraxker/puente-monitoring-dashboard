@@ -7,6 +7,7 @@ const path = require('path');
 const pool = require('./db');
 const { listActividades, getActividad, deleteActividad } = require('./routes/actividades');
 const { login, me, loginLimiter } = require('./routes/auth');
+const { syncNow, syncEstado } = require('./routes/sync');
 const { authRequired, requireRole } = require('./middleware/auth');
 
 const app = express();
@@ -40,6 +41,9 @@ app.get('/api/auth/me', authRequired, me);
 app.get('/api/actividades', authRequired, listActividades);
 app.get('/api/actividades/:id', authRequired, getActividad);
 app.put('/api/actividades/:id/anular', authRequired, requireRole('monitor'), deleteActividad);
+
+app.post('/api/sync', authRequired, requireRole('monitor'), syncNow);
+app.get('/api/sync/estado', authRequired, syncEstado);
 
 // Frontend estatico (misma URL = sin CORS en produccion)
 const dist = path.join(__dirname, '..', '..', 'frontend', 'dist');
