@@ -1,0 +1,16 @@
+{
+  "name": "Puente · Monitoreo y Evaluación",
+  "short_name": "Puente",
+  "description": "Dashboard de monitoreo de actividades — Fundación Puente Guatemala",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#124c91",
+  "theme_color": "#124c91",
+  "icons": [
+    { "src": "/logo-puente-icon.png", "sizes": "any", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "any", "type": "image/png", "purpose": "maskable" }
+  ]
+}
