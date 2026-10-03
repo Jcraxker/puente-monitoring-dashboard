@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('../src/env');
 const pool = require('../src/db');
 
 // Usernames, names and roles are public config.
@@ -7,6 +7,8 @@ const SEED_USERS = [
   { username: 'monitor', nombre: 'Monitor Principal', rol: 'monitor', departamento_id: null, hash: process.env.HASH_MONITOR },
   { username: 'gestor1', nombre: 'Rosa Sirin', rol: 'gestor', departamento_id: 1, hash: process.env.HASH_GESTOR1 },
   { username: 'tecnico1', nombre: 'Jonathan Cuxil', rol: 'tecnico', departamento_id: 1, hash: process.env.HASH_TECNICO1 },
+  { username: 'enc_pql', nombre: 'Encargado Chimaltenango', rol: 'encargado', departamento_id: 1, hash: process.env.HASH_ENC_PQL },
+  { username: 'enc_cah', nombre: 'Encargado Alta Verapaz', rol: 'encargado', departamento_id: 2, hash: process.env.HASH_ENC_CAH },
 ];
 
 async function seed() {
