@@ -1,58 +1,52 @@
-# Puente Monitoring Dashboard (WIP)
+# Puente · Dashboard de Monitoreo / Monitoring Dashboard
 
-Dashboard web de monitoreo de actividades para **Fundación Puente Guatemala** (ONG, est. 2009), pensado para automatizar el reporte de actividades de campo recopiladas en KoBoToolbox, reemplazando el proceso manual en Excel.
+Fundación Puente Guatemala — área de Monitoreo y Evaluación.
 
-Web dashboard to monitor field activities at **Fundación Puente Guatemala** (NGO, est. 2009). It aims to automate the reporting of field activities collected in KoBoToolbox, replacing the manual Excel workflow.
+## ES
 
-> **⚠️ Estado / Status: EN DESARROLLO — fase inicial (Semana 3 de prácticas).** Este repositorio abre como práctica profesional. Actualmente solo contiene documentación base (README, licencia, gitignore). **El código del dashboard y del backend aún no existe.** No hay funcionalidades implementadas todavía.
->
-> **⏱️ Planificación / Planning (17 ago – 03 sep):** investigación, análisis de requerimientos y maquetas de acuerdo a lo solicitado por los usuarios de la ONG, propuesta técnica y acuerdo de licencia. El desarrollo del código inicia esta semana.
->
-> **⚠️ Under development — initial phase (internship week 3).** This repository opens as a professional internship project. It currently only contains base documentation (README, license, gitignore). **The dashboard and backend code do not exist yet.** No features are implemented so far.
->
-> **⏱️ Planning (Aug 17 – Sep 03):** research, requirements analysis and mockups according to NGO users' requests, technical proposal and license agreement. Code development starts this week.
+Dashboard web que reemplaza el reporte manual en Excel: sincroniza actividades desde
+KoBoToolbox, muestra tabla con filtros, KPIs, viáticos por corte 16-15 y constancias en PDF.
 
-## Contexto / Context
+### Requisitos / Requirements
 
-El problema que busca resolver: el reporte mensual de actividades se hace manualmente (descargar de KoBoToolbox → copiar a plantilla Excel con macros VBA → verificar fórmulas → generar reportes). Proceso propenso a errores y lento (17-45 min por reporte).
+- Docker + Docker Compose
+- Token de KoBoToolbox (área de monitoreo)
 
-The problem it aims to solve: the monthly activity report is done manually (download from KoBoToolbox → copy into an Excel template with VBA macros → verify formulas → generate reports). Error-prone and slow (17-45 min per report).
+### Puesta en marcha / Quickstart
 
-## Plan técnico previsto / Planned tech stack
+```bash
+cp backend/.env.example .env
+# completar POSTGRES_PASSWORD, JWT_SECRET, KOBO_TOKEN, HASH_* en .env
+docker compose up -d --build
+# seed usuarios demo:
+docker compose exec app node db/seed.js
+```
 
-| Capa / Layer | Tecnología / Technology |
-|------|------------|
-| Frontend | React + Vite + Tailwind CSS 4 |
-| Backend | Node.js + Express |
-| Base de datos / Database | PostgreSQL |
-| Autenticación / Auth | JWT + bcrypt |
-| Deploy | Cloudflare Tunnel (reverse tunnel, $0) |
+Abrir / Open: http://localhost:3001 — API + frontend en el mismo puerto.
 
-*Stack previsto según documentación del proyecto. Su implementación está pendiente.*
+### Comandos
 
-*Planned per project documentation. Implementation is pending.*
+| Comando | Qué hace |
+|---|---|
+| `docker compose up -d` | levanta DB + app |
+| `docker compose exec app node db/seed.js` | crea usuarios demo |
+| `./scripts/backup.sh` | respaldo `pg_dump` con fecha |
 
-## Roadmap previsto / Planned roadmap
+### Seguridad
 
-- **Semana 1:** Configuración + maqueta / Setup + mockup
-- **Semana 2:** Backend + API conectada a KoBoToolbox / Backend + API connected to KoBoToolbox
-- **Semana 3:** Dashboard con tabla de datos / Dashboard with data table
-- **Semana 4:** Filtros, KPIs, viáticos / Filters, KPIs, expenses
-- **Semana 5:** Login + exportación / Login + export
-- **Semana 6:** Pruebas + documentación / Testing + documentation
+Secretos solo en `.env` (ignorado en git). Postgres sin puertos públicos.
+El token KoBo nunca sale del backend (fotos por proxy autenticado).
 
-## Alcance / Scope
+### Checklist pre-producción
+- [ ] Cambiar claves demo (`HASH_*` nuevos, borrar 1234)
+- [ ] `JWT_EXPIRES_DAYS=7` (demo usa 30 por comodidad)
+- [ ] Rotar `KOBO_TOKEN` (el actual se expuso en un share público)
+- [ ] Ante token robado: cambiar `JWT_SECRET` y reiniciar (invalida todo)
 
-Proyecto de prácticas profesionales de [Jack Fallas](https://github.com/JCraxker) (estudiante de informática). Desarrollado con metodología Scrum y entregas semanales.
+## EN
 
-Professional internship project by [Jack Fallas](https://github.com/JCraxker) (computer science student). Built with Scrum methodology and weekly deliveries.
+Web dashboard replacing the manual Excel report: syncs field activities from
+KoBoToolbox, with filterable tables, KPIs, 16–15 payroll-cut per-diems and PDF statements.
 
-## Licencia / License
-
-Todos los derechos reservados bajo la [licencia](./LICENSE) de Jack Fallas. Publicado con fines de portafolio profesional. No se permite redistribución ni trabajos derivados sin autorización del autor.
-
-All rights reserved under [license](./LICENSE) by Jack Fallas. Published for professional portfolio purposes. Redistribution and derivative works are not permitted without the author's authorization.
-
----
-
-**Autor / Author:** [Jack Fallas](https://github.com/JCraxker)
+Same quickstart as above. Secrets live only in `.env` (git-ignored).
+PostgreSQL has no public ports. The KoBo token never leaves the backend.
