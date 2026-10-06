@@ -28,3 +28,4 @@ memoria/
 # WordPress heredado (si aplica)
 wp-content/
 .neon
+.vercel
