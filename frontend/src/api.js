@@ -48,6 +48,10 @@ export const api = {
     ).toString()
     return request(`/viaticos${qs ? `?${qs}` : ''}`)
   },
+  usuarios: () => request('/usuarios'),
+  crearUsuario: (body) => request('/usuarios', { method: 'POST', body }),
+  cambiarClave: (id, body) => request(`/usuarios/${id}/password`, { method: 'PUT', body }),
+  toggleUsuario: (id) => request(`/usuarios/${id}/activo`, { method: 'PUT' }),
   syncEstado: () => request('/sync/estado'),
   sync: (full = false) => request(`/sync${full ? '?full=1' : ''}`, { method: 'POST' }),
   kpis: () => request('/kpis'),
