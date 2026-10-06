@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { api, getToken } from '../api'
+import { api, getToken, apiBase } from '../api'
 
 const DEPARTAMENTOS_FALLBACK = ['Chimaltenango']
 const COMUNIDADES_FALLBACK = {
@@ -45,8 +45,8 @@ function mapearRegistro(r) {
     ? `${String(r.hora_entrada).slice(0, 5)} - ${String(r.hora_salida).slice(0, 5)}`
     : '-'
   const fotos = []
-  if (r.foto1) fotos.push(`/api/actividades/${r.id}/foto/1`)
-  if (r.foto2) fotos.push(`/api/actividades/${r.id}/foto/2`)
+  if (r.foto1) fotos.push(`${apiBase}/api/actividades/${r.id}/foto/1`)
+  if (r.foto2) fotos.push(`${apiBase}/api/actividades/${r.id}/foto/2`)
   return {
     id: `${r.tipo_registro}-${r.id}`,
     fecha, dia,

@@ -11,11 +11,19 @@ export function getUser() {
   return raw ? JSON.parse(raw) : null
 }
 
+// En deploy dividido el frontend apunta al backend por URL absoluta.
+// Mismo origen (docker/tunel) sigue funcionando con string vacio.
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
+export function apiBase() {
+  return API_BASE
+}
+
 async function request(path, { method = 'GET', body = null } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}/api${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : null,
