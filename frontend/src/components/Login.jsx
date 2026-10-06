@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 export default function Login({ onLogin, errorExterno }) {
-  const [username, setUsername] = useState('')
+  const [username, setUsername] = useState('monitor')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
