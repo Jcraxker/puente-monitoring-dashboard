@@ -32,7 +32,7 @@ function getCorteActual() {
   } else {
     desde = new Date(anio, mes - 1, 16)
     hasta = new Date(anio, mes, 15)
-    label = `${new Date(anio, mes, 1).toLocaleString('es', { month: 'long' })} ${anio}`
+    label = `${desde.toLocaleString('es', { month: 'long' })} ${desde.getFullYear()}`
   }
   return {
     desde: desde.toISOString().split('T')[0],
@@ -90,7 +90,15 @@ function escHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
 
-function CeldaDia({ registro }) {
+function CeldaDia({ registro, esFuturo, esPasadoSinDeclarar }) {
+  if (esFuturo) return <span className="text-sm text-[#e0e0e0]">·</span>
+  if (esPasadoSinDeclarar) {
+    return (
+      <span className="inline-block text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
+        Sin declarar
+      </span>
+    )
+  }
   if (!registro) return <span className="text-sm font-medium text-[#d6d6d6]">—</span>
   const t = textoDia(registro)
   if (t.clase === 'q') return <span className="text-sm font-medium text-texto">{t.texto}</span>
@@ -167,6 +175,63 @@ function filaGrupoHTML(nombre, sub) {
 <tr data-grupo="1"><td colspan="7" style="background:#eef3fa;padding:6px 8px;font-weight:700;font-size:9pt;border-top:2px solid #124c91">
   ${escHtml(nombre)} <span style="font-weight:400;color:#747474">· ${sub}</span>
 </td></tr>`
+}
+
+// Dias del corte (todos) + filas de estado para la constancia
+function diasDelCorte(desde, hasta) {
+  const out = []
+  const ini = new Date(desde + 'T00:00:00')
+  const fin = new Date(hasta + 'T00:00:00')
+  for (let d = new Date(ini); d <= fin; d.setDate(d.getDate() + 1)) {
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    out.push({ fechaStr: `${d.getFullYear()}-${m}-${day}`, dow: d.getDay() })
+  }
+  return out
+}
+
+function hoyLocal() {
+  const a = new Date()
+  return `${a.getFullYear()}-${String(a.getMonth() + 1).padStart(2, '0')}-${String(a.getDate()).padStart(2, '0')}`
+}
+
+function filaVaciaHTML(fechaStr, i, sombrear, estado) {
+  const esNoDec = estado === 'nodeclarado'
+  const bg = esNoDec ? 'background:#fef2f2;' : (sombrear ? 'background:#f4f7fd;' : '')
+  const act = esNoDec
+    ? '<span style="color:#b91c1c;font-weight:700">No declarado</span>'
+    : '<span style="color:#9ca3af">Pendiente</span>'
+  return `
+<tr>
+  <td style="padding:9px 6px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;color:#747474;${bg}">${i + 1}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;white-space:nowrap;${bg}">${formatFecha(new Date(fechaStr + 'T00:00:00'))}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;${bg}">${act}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">-</td>
+</tr>`
+}
+
+// Filas de una persona: todos los dias habiles + fin de semana solo con dato.
+// Devuelve array de <tr> (uno por unidad medible). ctx = { n } numeracion global.
+function filasPersonaHTML(dias, porFecha, hoy, ctx) {
+  const filas = []
+  let j = 0
+  const push = (s) => { filas.push(s); j++ }
+  for (const d of dias) {
+    const esFinde = d.dow === 0 || d.dow === 6
+    const regs = porFecha[d.fechaStr] || []
+    if (esFinde && regs.length === 0) continue
+    if (regs.length > 0) {
+      for (const r of regs) push(filaDatoHTML(r, ctx.n++, j % 2 === 1))
+    } else if (d.fechaStr > hoy) {
+      push(filaVaciaHTML(d.fechaStr, ctx.n++, j % 2 === 1, 'pendiente'))
+    } else {
+      push(filaVaciaHTML(d.fechaStr, ctx.n++, j % 2 === 1, 'nodeclarado'))
+    }
+  }
+  return filas
 }
 
 export default function Viaticos({ usuario }) {
@@ -294,6 +359,12 @@ export default function Viaticos({ usuario }) {
         const fechaStr = dia.toISOString().split('T')[0]
         const dentroRango = fechaStr >= corteSeleccionado.desde && fechaStr <= corteSeleccionado.hasta
         const registro = registrosEnSemana.find(r => r.fecha === fechaStr)
+        const ahora = new Date()
+        const hoyStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`
+        const esFuturo = fechaStr > hoyStr
+        const esHoy = fechaStr === hoyStr
+        const esFinDe = dia.getDay() === 0 || dia.getDay() === 6
+        const esPasadoSinDeclarar = dentroRango && !esFuturo && !esHoy && !esFinDe && !registro
         return {
           fecha: dia,
           fechaStr,
@@ -302,6 +373,8 @@ export default function Viaticos({ usuario }) {
           km: registro ? (registro.kilometros || 0) : 0,
           dentroRango,
           registro,
+          esFuturo,
+          esPasadoSinDeclarar,
         }
       })
 
@@ -354,130 +427,6 @@ export default function Viaticos({ usuario }) {
     return cortes
   }, [])
 
-  const generateConstanciaHTML = useCallback((folioForzado) => {
-    const personalNombre = filtroPersonal || (esMonitor ? 'Todos los colaboradores' : usuario.nombre)
-    const esResumenGeneral = esMonitor && !filtroPersonal
-    const periodoTexto = `${corteSeleccionado.label} (${formatFecha(new Date(corteSeleccionado.desde + 'T00:00:00'))} - ${formatFecha(new Date(corteSeleccionado.hasta + 'T00:00:00'))})`
-    const yyyymm = corteSeleccionado.desde.slice(0, 7).replace('-', '')
-    const iniciales = esResumenGeneral ? 'TODOS' : personalNombre.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
-    const folio = folioForzado || `PV-${yyyymm}-${iniciales}`
-    const emitida = new Date().toLocaleDateString('es-GT', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    const infoPersonal = !esResumenGeneral && cats
-      ? cats.personal.find(p => p.nombre === personalNombre)
-      : null
-    const rolTxt = infoPersonal
-      ? (infoPersonal.tipo === 'tecnico' ? 'Tecnico SEA' : 'Gestor Comunitario')
-      : ''
-    const deptoTxt = infoPersonal ? (infoPersonal.departamento || '') : esResumenGeneral ? 'Todos los departamentos' : ''
-    const colabRol = esResumenGeneral ? '' : rolTxt
-    const colabProyecto = esResumenGeneral
-      ? '<div style="font-size:8.5pt;color:#747474">Todos los departamentos</div>'
-      : `<div style="font-size:10pt;margin-top:4px">Proyecto: <strong style="color:#124c91;border-bottom:2px solid #fcce01;padding-bottom:1px">${escHtml(deptoTxt)}</strong></div>`
-
-    const registrosSorted = registrosEnCorte.slice().sort((a, b) => a.fecha.localeCompare(b.fecha))
-    const totalGeneral = registrosSorted.reduce((acc, r) => acc + r.viatico, 0)
-    const totalKm = registrosSorted.reduce((acc, r) => acc + (r.kilometros || 0), 0)
-
-    const filaDato = (r, i, sombrear) => {
-      const viaticoTxt = r.tipo === 'Permiso' ? '-' : r.viatico > 0 ? `Q${r.viatico.toLocaleString()}` : '—'
-      const bg = sombrear ? 'background:#f4f7fd;' : ''
-      return `
-      <tr>
-        <td style="padding:9px 6px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;color:#747474;${bg}">${i + 1}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;white-space:nowrap;${bg}">${formatFecha(new Date(r.fecha + 'T00:00:00'))}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;word-wrap:break-word;${bg}">${escHtml(r.comunidad)}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;word-wrap:break-word;${bg}">${escHtml(r.actividad)}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;${bg}">${r.tipo}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;font-weight:600;${bg}">${viaticoTxt}</td>
-        <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">${r.kilometros > 0 ? `${r.kilometros} km` : '-'}</td>
-      </tr>
-    `}
-
-    const modoPersona = (regs) => {
-      const q = regs.some(r => r.viatico > 0)
-      const k = regs.some(r => (r.kilometros || 0) > 0)
-      if (q && k) return 'Mixto'
-      if (q) return 'Q declarado'
-      if (k) return 'Vehiculo propio'
-      return 'Sin montos'
-    }
-
-    let filasTabla
-    if (esResumenGeneral) {
-      const grupos = {}
-      for (const r of registrosSorted) {
-        if (!grupos[r.personal]) grupos[r.personal] = []
-        grupos[r.personal].push(r)
-      }
-      let n = 0
-      filasTabla = Object.keys(grupos).sort().map(nombre => {
-        const regs = grupos[nombre]
-        const tq = regs.reduce((a, r) => a + r.viatico, 0)
-        const tk = regs.reduce((a, r) => a + (r.kilometros || 0), 0)
-        const resumenMontos = tq > 0 && tk > 0
-          ? `Q${tq.toLocaleString('es-GT')} · ${tk} km`
-          : tq > 0 ? `Q${tq.toLocaleString('es-GT')}` : tk > 0 ? `${tk} km` : 'Sin montos'
-        const filas = regs.map((r, j) => { n += 1; return filaDato(r, n - 1, j % 2 === 1) }).join('')
-        return `
-      <tr data-grupo="1"><td colspan="7" style="background:#eef3fa;padding:6px 8px;font-weight:700;font-size:9pt;border-top:2px solid #124c91">
-        ${nombre} <span style="font-weight:400;color:#747474">· ${modoPersona(regs)} · ${resumenMontos}</span>
-      </td></tr>${filas}`
-      }).join('')
-    } else {
-      filasTabla = registrosSorted.map((r, i) => filaDato(r, i, i % 2 === 1)).join('')
-    }
-
-    const firmasHTML = esResumenGeneral ? '' : `
-  <div style="display:flex;justify-content:space-between;margin-top:50px;padding:0 10px">
-    <div style="text-align:center;width:30%"><div style="border-top:1px solid #212121;margin-bottom:4px"></div><div style="font-size:8.5pt;color:#212121">Colaborador</div><div style="font-size:8pt;font-weight:700;color:#747474;margin-top:2px">${escHtml(personalNombre)}</div></div>
-    <div style="text-align:center;width:30%"><div style="border-top:1px solid #212121;margin-bottom:4px"></div><div style="font-size:8.5pt;color:#212121">Jefe Inmediato</div></div>
-    <div style="text-align:center;width:30%"><div style="border-top:1px solid #212121;margin-bottom:4px"></div><div style="font-size:8.5pt;color:#212121">A. Contable</div></div>
-  </div>`
-
-    return `<div style="font-family:Arial,Helvetica,sans-serif;color:#212121;font-size:10pt;line-height:1.55;padding:28px 40px 20px;background:#fff;width:760px;max-width:760px;overflow:hidden">
-  <div style="text-align:center;margin-bottom:2px">
-    <img src="${window.location.origin}/logo-puente.png" style="display:block;width:130px;margin:0 auto" />
-    <div style="font-size:8pt;color:#747474;margin-top:4px">Monitoreo y Evaluacion</div>
-  </div>
-  <div style="text-align:center;font-size:15pt;font-weight:700;color:#124c91;margin:10px 0 2px;letter-spacing:1.5px">${esResumenGeneral ? 'RESUMEN DE VIATICOS' : 'CONSTANCIA DE VIATICOS'}</div>
-  <div style="text-align:center;font-size:8.5pt;color:#747474;margin-bottom:14px">No. ${folio} · Emitida: ${emitida}</div>
-  <div style="display:flex;gap:14px;margin-bottom:16px">
-    <div style="flex:1.2;border:1px solid #d5dcea;border-radius:8px;padding:14px 18px;background:#fafbfe">
-      <div style="font-size:7.5pt;color:#124c91;font-weight:700;letter-spacing:0.8px;margin-bottom:6px">COLABORADOR</div>
-      <div style="font-size:12pt;font-weight:700;margin-bottom:2px">${escHtml(personalNombre)}</div>
-      ${colabRol ? `<div style="font-size:9pt;color:#747474;margin-bottom:2px">${escHtml(colabRol)}</div>` : ''}
-      ${colabProyecto}
-    </div>
-    <div style="flex:1;border:1px solid #d5dcea;border-radius:8px;padding:14px 18px;background:#fafbfe">
-      <div style="font-size:7.5pt;color:#124c91;font-weight:700;letter-spacing:0.8px;margin-bottom:6px">PERIODO</div>
-      <div style="font-size:11pt;font-weight:700">${periodoTexto}</div>
-    </div>
-  </div>
-  <table style="width:100%;max-width:680px;table-layout:fixed;border-collapse:collapse;font-size:9pt;margin-bottom:16px;border:1px solid #cfd8ea">
-    <thead><tr>
-      <th style="background:#124c91;color:white;padding:10px 6px;text-align:center;font-weight:700;width:6%;border-right:1px solid rgba(255,255,255,0.25);border-bottom:3px solid #fcce01">No.</th>
-      <th style="background:#124c91;color:white;padding:9px 8px;text-align:left;font-weight:700;width:10%;border-right:1px solid rgba(255,255,255,0.25);border-bottom:3px solid #fcce01">Fecha</th>
-      <th style="background:#124c91;color:white;padding:9px 8px;text-align:left;font-weight:700;width:16%;border-right:1px solid rgba(255,255,255,0.25);border-bottom:3px solid #fcce01">Comunidad</th>
-      <th style="background:#124c91;color:white;padding:9px 8px;text-align:left;font-weight:700;word-wrap:break-word;border-right:1px solid rgba(255,255,255,0.25);border-bottom:3px solid #fcce01">Actividad</th>
-      <th style="background:#124c91;color:white;padding:9px 8px;text-align:center;font-weight:700;width:10%;border-right:1px solid rgba(255,255,255,0.25);border-bottom:3px solid #fcce01">Tipo</th>
-      <th style="background:#124c91;color:white;padding:9px 8px;text-align:right;font-weight:700;width:11%;border-right:1px solid rgba(255,255,255,0.25);border-bottom:3px solid #fcce01">Viático (Q)</th>
-      <th style="background:#124c91;color:white;padding:9px 8px;text-align:right;font-weight:700;width:10%;border-bottom:3px solid #fcce01">Km (km)</th>
-    </tr></thead>
-    <tbody>${filasTabla}</tbody>
-    <tfoot><tr style="background:#e8eefa">
-      <td colspan="5" style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt">TOTAL</td>
-      <td style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt;color:#124c91">Q${totalGeneral.toLocaleString('es-GT')}</td>
-      <td style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt;color:#124c91">${totalKm > 0 ? `${totalKm} km` : '-'}</td>
-    </tr></tfoot>
-  </table>
-  <div class="bloque-final">
-  ${esResumenGeneral ? `<div style="border:2px solid #124c91;border-radius:8px;padding:13px 16px;text-align:center;margin-bottom:10px;background:#f4f7fd">
-    <span style="font-size:12pt;font-weight:700;color:#124c91">Total Q: Q${totalGeneral.toLocaleString('es-GT')}${totalKm > 0 ? ` · Total km: ${totalKm} km` : ''}</span><div style="font-size:7.5pt;color:#747474;margin-top:4px">Los kilometros son distancia en vehiculo propio y no suman quetzales</div>
-  </div>` : ''}
-  ${firmasHTML}
-  </div>
-</div>`
-  }, [corteSeleccionado, filtroPersonal, esMonitor, usuario, registrosEnCorte, cats])
 
   // Paginas armadas por datos: encabezado repetido, grupos intactos, cierre junto
   const construirPaginas = useCallback((folio) => {
@@ -550,7 +499,17 @@ export default function Viaticos({ usuario }) {
       return 'Sin montos'
     }
     const unidades = []
-    let n = 0
+    const ctx = { n: 0 }
+    const dias = diasDelCorte(corteSeleccionado.desde, corteSeleccionado.hasta)
+    const hoy = hoyLocal()
+    const porFechaDe = (regs) => {
+      const m = {}
+      for (const r of regs) {
+        if (!m[r.fecha]) m[r.fecha] = []
+        m[r.fecha].push(r)
+      }
+      return m
+    }
     if (esResumenGeneral) {
       const grupos = {}
       for (const r of registrosSorted) {
@@ -565,11 +524,15 @@ export default function Viaticos({ usuario }) {
           : tq > 0 ? `${modoPersona(regs)} · Q${tq.toLocaleString('es-GT')}`
           : tk > 0 ? `${modoPersona(regs)} · ${tk} km` : modoPersona(regs)
         unidades.push({ kind: 'grupo', grupo: nombre, html: filaGrupoHTML(nombre, sub) })
-        regs.forEach((r, j) => { unidades.push({ kind: 'fila', grupo: nombre, html: filaDatoHTML(r, n++, j % 2 === 1) }) })
+        for (const f of filasPersonaHTML(dias, porFechaDe(regs), hoy, ctx)) {
+          unidades.push({ kind: 'fila', grupo: nombre, html: f })
+        }
         unidades.push({ kind: 'subtotal', grupo: nombre, html: filaSubtotalHTML(nombre, tq, tk) })
       }
     } else {
-      registrosSorted.forEach((r, j) => { unidades.push({ kind: 'fila', grupo: null, html: filaDatoHTML(r, n++, j % 2 === 1) }) })
+      for (const f of filasPersonaHTML(dias, porFechaDe(registrosSorted), hoy, ctx)) {
+        unidades.push({ kind: 'fila', grupo: null, html: f })
+      }
     }
     unidades.push({ kind: 'cierre', grupo: null })
 
@@ -697,8 +660,6 @@ export default function Viaticos({ usuario }) {
       }
 
       pdf.save(`viaticos_${personalNombre.replace(/\s+/g, '_')}_${corteSeleccionado.label.replace(/\s+/g, '_')}.pdf`)
-
-      pdf.save(`viaticos_${personalNombre.replace(/\s+/g, '_')}_${corteSeleccionado.label.replace(/\s+/g, '_')}.pdf`)
     } catch (err) {
       console.error('Error al generar PDF:', err)
       alert('Error al generar PDF: ' + err.message)
@@ -716,10 +677,11 @@ export default function Viaticos({ usuario }) {
       } catch {
         folio = null
       }
-      const html = generateConstanciaHTML(folio)
+      const paginas = construirPaginas(folio)
+      const cuerpo = paginas.map(h => `<div style="page-break-after:always">${h}</div>`).join('')
       if (win) {
         win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Constancia de Viaticos</title>
-<style>@page{size:letter;margin:15mm 20mm}*{margin:0;padding:0;box-sizing:border-box}body{margin:0}</style></head><body>${html}</body></html>`)
+<style>@page{size:letter;margin:15mm 20mm}*{margin:0;padding:0;box-sizing:border-box}body{margin:0}table{page-break-inside:auto}tr{page-break-inside:avoid}</style></head><body>${cuerpo}</body></html>`)
         win.document.close()
         win.focus()
         setTimeout(() => win.print(), 400)
@@ -728,7 +690,7 @@ export default function Viaticos({ usuario }) {
       if (win) win.close()
       alert('Error al preparar impresion: ' + err.message)
     }
-  }, [generateConstanciaHTML, corteSeleccionado])
+  }, [construirPaginas, corteSeleccionado])
 
   return (
     <div className="space-y-4">
@@ -996,7 +958,7 @@ export default function Viaticos({ usuario }) {
                               d.registro && d.registro.tipo === 'Permiso' ? (
                                 <span className="text-xs text-coral font-medium italic">Permiso</span>
                               ) : (
-                                <CeldaDia registro={d.registro} />
+                                <CeldaDia registro={d.registro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
                               )
                             ) : (
                               <span className="text-[10px] text-[#b0b0b0]">—</span>
@@ -1047,7 +1009,7 @@ export default function Viaticos({ usuario }) {
                           <div className="text-[10px] text-coral font-medium italic mt-0.5">Permiso</div>
                         ) : (
                           <div className="font-semibold mt-0.5">
-                            <CeldaDia registro={d.registro} />
+                            <CeldaDia registro={d.registro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
                           </div>
                         )
                       ) : (
