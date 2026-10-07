@@ -36,6 +36,15 @@
   .sidebar__label {
     display: inline !important;
   }
+
+  /* En móvil solo el footer completo; el mini es solo desktop colapsado */
+  .sidebar__footer-mini {
+    display: none !important;
+  }
+
+  .sidebar__footer-full {
+    display: block !important;
+  }
 }
 
 /* ===== DESKTOP (≥ 1024px) ===== */
