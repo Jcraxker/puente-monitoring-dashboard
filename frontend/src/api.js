@@ -58,6 +58,7 @@ export const api = {
   },
   usuarios: () => request('/usuarios'),
   crearUsuario: (body) => request('/usuarios', { method: 'POST', body }),
+  actualizarUsuario: (id, body) => request(`/usuarios/${id}`, { method: 'PUT', body }),
   cambiarClave: (id, body) => request(`/usuarios/${id}/password`, { method: 'PUT', body }),
   toggleUsuario: (id) => request(`/usuarios/${id}/activo`, { method: 'PUT' }),
   syncEstado: () => request('/sync/estado'),

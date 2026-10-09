@@ -51,6 +51,7 @@ function mapearRegistro(r) {
     id: `${r.tipo_registro}-${r.id}`,
     fecha, dia,
     personal: r.personal || 'Sin asignar',
+    personal_id: r.personal_id || null,
     rol: r.rol === 'tecnico' ? 'Técnico SEA' : 'Gestor Comunitario',
     zona: '',
     departamento: r.departamento || '',
@@ -280,10 +281,12 @@ export default function Actividades({ usuario }) {
   const baseData = useMemo(() => {
     let data = datos
     if (usuario.rol === 'gestor' || usuario.rol === 'tecnico') {
-      data = data.filter(a => a.personal === usuario.nombre)
+      data = usuario.personal_id
+        ? data.filter(a => a.personal_id === usuario.personal_id)
+        : data.filter(a => a.personal === usuario.nombre)
     }
     return data
-  }, [datos, usuario.rol, usuario.nombre])
+  }, [datos, usuario.rol, usuario.nombre, usuario.personal_id])
 
   const filtered = useMemo(() => {
     return baseData.filter(a => {

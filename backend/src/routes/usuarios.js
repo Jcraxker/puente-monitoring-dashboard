@@ -9,8 +9,10 @@ async function listUsuarios(req, res) {
   try {
     const { rows } = await pool.query(
       `SELECT u.id, u.username, u.nombre, u.rol, u.departamento_id,
-              d.nombre AS departamento, u.activo, u.created_at
+              d.nombre AS departamento, u.personal_id,
+              p.nombre AS personal, u.activo, u.created_at
        FROM usuarios u LEFT JOIN departamentos d ON d.id = u.departamento_id
+       LEFT JOIN personal p ON p.id = u.personal_id
        ORDER BY u.rol, u.nombre`
     );
     res.json({ data: rows });
@@ -20,9 +22,25 @@ async function listUsuarios(req, res) {
   }
 }
 
+async function validarVinculo(client, personal_id, departamento_id, excluirId) {
+  if (!personal_id) return null;
+  const { rows } = await client.query('SELECT id, nombre, departamento_id FROM personal WHERE id = $1', [personal_id]);
+  if (!rows.length) return 'Persona no existe';
+  if (departamento_id && rows[0].departamento_id !== Number(departamento_id)) {
+    return 'La persona no es de ese departamento';
+  }
+  const otro = await client.query(
+    'SELECT id FROM usuarios WHERE personal_id = $1 AND id <> $2',
+    [personal_id, excluirId || 0]
+  );
+  if (otro.rows.length) return 'Esa persona ya tiene usuario';
+  return null;
+}
+
 async function createUsuario(req, res) {
+  const client = await pool.connect();
   try {
-    const { username, password, nombre, rol, departamento_id } = req.body || {};
+    const { username, password, nombre, rol, departamento_id, personal_id } = req.body || {};
     if (!username || !password || !nombre || !rol) {
       return res.status(400).json({ error: 'Usuario, clave, nombre y rol requeridos' });
     }
@@ -33,18 +51,28 @@ async function createUsuario(req, res) {
     if ((rol === 'encargado' || rol === 'gestor' || rol === 'tecnico') && !departamento_id) {
       return res.status(400).json({ error: 'Ese rol requiere departamento' });
     }
+    if ((rol === 'gestor' || rol === 'tecnico') && !personal_id) {
+      return res.status(400).json({ error: 'Gestor/técnico requiere persona vinculada' });
+    }
+    if ((rol === 'monitor' || rol === 'encargado') && personal_id) {
+      return res.status(400).json({ error: 'Ese rol no lleva persona vinculada' });
+    }
+    const errV = await validarVinculo(client, personal_id, departamento_id, null);
+    if (errV) return res.status(409).json({ error: errV });
     const hash = await bcrypt.hash(String(password), 10);
-    const { rows } = await pool.query(
-      `INSERT INTO usuarios (username, nombre, rol, departamento_id, password_hash)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, username, nombre, rol, departamento_id`,
+    const { rows } = await client.query(
+      `INSERT INTO usuarios (username, nombre, rol, departamento_id, personal_id, password_hash)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, nombre, rol, departamento_id, personal_id`,
       [String(username).toLowerCase().trim(), String(nombre).trim(), rol,
-       departamento_id || null, hash]
+       departamento_id || null, personal_id || null, hash]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Ese usuario ya existe' });
     console.error('createUsuario error', err);
     res.status(500).json({ error: 'Error al crear usuario' });
+  } finally {
+    client.release();
   }
 }
 
@@ -78,6 +106,39 @@ async function changePassword(req, res) {
   }
 }
 
+async function updateUsuario(req, res) {
+  const client = await pool.connect();
+  try {
+    if (Number(req.params.id) === Number(req.user.id)) {
+      return res.status(400).json({ error: 'No puedes editarte a ti mismo aquí' });
+    }
+    const { nombre, rol, departamento_id, personal_id } = req.body || {};
+    if (!nombre || !rol) return res.status(400).json({ error: 'Nombre y rol requeridos' });
+    if (!ROLES.has(rol)) return res.status(400).json({ error: 'Rol invalido' });
+    if ((rol === 'gestor' || rol === 'tecnico') && !personal_id) {
+      return res.status(400).json({ error: 'Gestor/técnico requiere persona vinculada' });
+    }
+    if ((rol === 'monitor' || rol === 'encargado') && personal_id) {
+      return res.status(400).json({ error: 'Ese rol no lleva persona vinculada' });
+    }
+    const errV = await validarVinculo(client, personal_id, departamento_id, req.params.id);
+    if (errV) return res.status(409).json({ error: errV });
+    const { rows } = await client.query(
+      `UPDATE usuarios SET nombre = $1, rol = $2, departamento_id = $3, personal_id = $4,
+        updated_at = CURRENT_TIMESTAMP WHERE id = $5
+       RETURNING id, username, nombre, rol, departamento_id, personal_id`,
+      [String(nombre).trim(), rol, departamento_id || null, personal_id || null, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('updateUsuario error', err);
+    res.status(500).json({ error: 'Error al actualizar usuario' });
+  } finally {
+    client.release();
+  }
+}
+
 async function toggleActivo(req, res) {
   try {
     if (Number(req.params.id) === Number(req.user.id)) {
@@ -95,4 +156,4 @@ async function toggleActivo(req, res) {
   }
 }
 
-module.exports = { listUsuarios, createUsuario, changePassword, toggleActivo };
+module.exports = { listUsuarios, createUsuario, updateUsuario, changePassword, toggleActivo };

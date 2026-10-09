@@ -15,7 +15,8 @@ function signToken(user) {
   const days = Number(process.env.JWT_EXPIRES_DAYS) || 30;
   return jwt.sign(
     { id: user.id, username: user.username, nombre: user.nombre, rol: user.rol,
-      departamento_id: user.departamento_id || null, departamento: user.departamento || null },
+      departamento_id: user.departamento_id || null, departamento: user.departamento || null,
+      personal_id: user.personal_id || null },
     process.env.JWT_SECRET,
     { expiresIn: `${days}d` }
   );
