@@ -199,20 +199,21 @@ function hoyLocal() {
 
 function filaVaciaHTML(fechaStr, i, sombrear, estado) {
   const esNoDec = estado === 'nodeclarado'
-  const bg = esNoDec ? 'background:#fee2e2;' : (sombrear ? 'background:#f4f7fd;' : '')
+  const bg = esNoDec ? 'background:#fecaca;' : (sombrear ? 'background:#f4f7fd;' : '')
+  const borde = esNoDec ? '#f87171' : '#e6e6e6'
   const act = esNoDec
-    ? '<span style="color:#b91c1c;font-weight:700">No declarado</span>'
+    ? '<span style="color:#991b1b;font-weight:700">—</span>'
     : '<span style="color:#9ca3af">Pendiente</span>'
   const bold = esNoDec ? 'font-weight:700;color:#991b1b;' : ''
   return `
 <tr>
-  <td style="padding:9px 6px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;color:#991b1b;${bg}">${i + 1}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;white-space:nowrap;${bg}${bold}">${formatFecha(new Date(fechaStr + 'T00:00:00'))}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;${bg}">—</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;${bg}">${act}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;${bg}">—</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:right;${bg}">—</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:right;${bg}">-</td>
+  <td style="padding:9px 6px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;color:#991b1b;${bg}">${i + 1}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;white-space:nowrap;${bg}${bold}">${formatFecha(new Date(fechaStr + 'T00:00:00'))}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;${bg}">${act}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:right;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:right;${bg}">-</td>
 </tr>`
 }
 
@@ -569,7 +570,8 @@ export default function Viaticos({ usuario }) {
     document.body.removeChild(med)
 
     // Distribuir: primera pagina con headFull, resto con headMini, cierre indivisible
-    const LIM = 860
+    // Se reservan ~30px para el pie visible (Pagina X de N · Folio)
+    const LIM = 830
     const paginas = [[]]
     const alturasPag = [headFullH]
     let grupoEnPag = null
@@ -608,7 +610,7 @@ export default function Viaticos({ usuario }) {
       if (u.kind === 'grupo') grupoEnPag = u.grupo
     })
 
-    // Armar HTML por pagina
+    // Armar HTML por pagina (con pie visible: misma info en PDF e Imprimir)
     return paginas.map((units, pi) => {
       const head = pi === 0 ? headFull : headMini
       let filas = ''
@@ -620,7 +622,8 @@ export default function Viaticos({ usuario }) {
           filas += u.html
         }
       }
-      return `${abrir(head)}${filas}${cerrarTabla}${cierre}</div>`
+      const pie = `<div style="margin-top:10px;padding-top:6px;border-top:1px solid #e6e6e6;font-size:7.5pt;color:#747474;text-align:center">Página ${pi + 1} de ${paginas.length} · Folio ${folio}</div>`
+      return `${abrir(head)}${filas}${cerrarTabla}${cierre}${pie}</div>`
     })
   }, [corteSeleccionado, filtroPersonal, esMonitor, usuario, registrosEnCorte, cats])
 
@@ -643,7 +646,6 @@ export default function Viaticos({ usuario }) {
       const paginasHTML = construirPaginas(folio)
       const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'letter', compress: true })
       const pageW = pdf.internal.pageSize.getWidth()
-      const pageH = pdf.internal.pageSize.getHeight()
       const imgW = pageW - 30
       const totalPages = paginasHTML.length
       for (let p = 0; p < totalPages; p++) {
@@ -655,13 +657,7 @@ export default function Viaticos({ usuario }) {
         const canvas = await html2canvas(container, { scale: 1.25, useCORS: true, backgroundColor: '#ffffff' })
         document.body.removeChild(container)
         const imgH = (canvas.height * imgW) / canvas.width
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 15, 15, imgW, imgH)
-        pdf.setFont('helvetica', 'normal')
-        pdf.setFontSize(8)
-        pdf.setTextColor(116, 116, 116)
-        const txt = `Pagina ${p + 1} de ${totalPages} · Folio ${folio}`
-        const w = pdf.getTextWidth(txt)
-        pdf.text(txt, (pageW - w) / 2, pageH - 10)
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 15, 15, imgH)
       }
 
       pdf.save(`viaticos_${personalNombre.replace(/\s+/g, '_')}_${corteSeleccionado.label.replace(/\s+/g, '_')}.pdf`)
