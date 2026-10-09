@@ -46,7 +46,7 @@ const { listViaticos } = require('./routes/viaticos');
 const { catalogos, registros } = require('./routes/registros');
 const { kpis } = require('./routes/kpis');
 const { siguiente: siguienteFolio } = require('./routes/correlativos');
-const { listUsuarios, createUsuario, changePassword, toggleActivo } = require('./routes/usuarios');
+const { listUsuarios, createUsuario, updateUsuario, changePassword, toggleActivo } = require('./routes/usuarios');
 
 app.post('/api/sync', authRequired, requireRole('monitor'), syncNow);
 app.get('/api/sync/estado', authRequired, syncEstado);
@@ -60,6 +60,7 @@ app.post('/api/correlativos/siguiente', authRequired, siguienteFolio);
 
 app.get('/api/usuarios', authRequired, requireRole('monitor'), listUsuarios);
 app.post('/api/usuarios', authRequired, requireRole('monitor'), createUsuario);
+app.put('/api/usuarios/:id', authRequired, requireRole('monitor'), updateUsuario);
 app.put('/api/usuarios/:id/password', authRequired, requireRole('monitor'), changePassword);
 app.put('/api/usuarios/:id/activo', authRequired, requireRole('monitor'), toggleActivo);
 

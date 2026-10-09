@@ -117,6 +117,7 @@ function mapearViaticos(v) {
     transporte: r.tipo_transporte || '',
     tipo: 'Actividad',
     personal: r.personal || 'Sin asignar',
+    personal_id: r.personal_id || null,
     departamento: r.departamento_id === 1 ? 'Chimaltenango' : r.departamento_id === 2 ? 'Alta Verapaz' : '',
   }))
   const perm = (v.permisos || []).map((r, i) => ({
@@ -129,6 +130,7 @@ function mapearViaticos(v) {
     transporte: '',
     tipo: 'Permiso',
     personal: r.personal || 'Sin asignar',
+    personal_id: r.personal_id || null,
     departamento: '',
   }))
   return acts.concat(perm)
@@ -322,7 +324,9 @@ export default function Viaticos({ usuario }) {
   const registrosVisibles = useMemo(() => {
     let data = datos
     if (usuario.rol === 'gestor' || usuario.rol === 'tecnico') {
-      data = data.filter(r => r.personal === usuario.nombre)
+      data = usuario.personal_id
+        ? data.filter(r => r.personal_id === usuario.personal_id)
+        : data.filter(r => r.personal === usuario.nombre)
     }
     if ((esMonitor || usuario.rol === 'encargado') && filtroDepartamento) {
       const personalEnDepto = PERSONAL.filter(p => p.departamento === filtroDepartamento).map(p => p.nombre)
