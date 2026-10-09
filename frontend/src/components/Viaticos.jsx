@@ -199,19 +199,20 @@ function hoyLocal() {
 
 function filaVaciaHTML(fechaStr, i, sombrear, estado) {
   const esNoDec = estado === 'nodeclarado'
-  const bg = esNoDec ? 'background:#fef2f2;' : (sombrear ? 'background:#f4f7fd;' : '')
+  const bg = esNoDec ? 'background:#fee2e2;' : (sombrear ? 'background:#f4f7fd;' : '')
   const act = esNoDec
     ? '<span style="color:#b91c1c;font-weight:700">No declarado</span>'
     : '<span style="color:#9ca3af">Pendiente</span>'
+  const bold = esNoDec ? 'font-weight:700;color:#991b1b;' : ''
   return `
 <tr>
-  <td style="padding:9px 6px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;color:#747474;${bg}">${i + 1}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;white-space:nowrap;${bg}">${formatFecha(new Date(fechaStr + 'T00:00:00'))}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;${bg}">—</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;${bg}">${act}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;${bg}">—</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">—</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">-</td>
+  <td style="padding:9px 6px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;color:#991b1b;${bg}">${i + 1}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;white-space:nowrap;${bg}${bold}">${formatFecha(new Date(fechaStr + 'T00:00:00'))}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;${bg}">${act}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:center;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:right;${bg}">—</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #fca5a5;vertical-align:middle;text-align:right;${bg}">-</td>
 </tr>`
 }
 
