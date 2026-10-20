@@ -11,6 +11,8 @@ repo público + docs bilingües (decisión 2026-09-03, ver `memoria/02_decisione
 - Memoria del proyecto: `memoria/` (índice en `memoria/00_indice.md`).
 - Al cerrar trabajo significativo: actualizar `memoria/03_cambios.md`,
   `memoria/04_pendientes.md` y `~/memory-ai/project_puente.md`.
+- **DESPUÉS de CADA commit y PR: actualizar memoria SIN EXCEPCIÓN**
+  (estado actual, PR activo, pendientes). No esperar a cerrar sesión.
 
 ## Puertos y servicios
 - Frontend dev 5173 · estático 5137 (`node serve.cjs`) · DB postgres 5432 · Backend 3001 (`npm start` en backend/).
