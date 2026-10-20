@@ -622,7 +622,7 @@ export default function Viaticos({ usuario }) {
           filas += u.html
         }
       }
-      const pie = `<div style="margin-top:10px;padding-top:6px;border-top:1px solid #e6e6e6;font-size:7.5pt;color:#747474;text-align:center">Página ${pi + 1} de ${paginas.length} · Folio ${folio}</div>`
+      const pie = `<div style="margin-top:15px;padding-top:8px;border-top:1px solid #e6e6e6;font-size:8pt;color:#747474;text-align:center">Página ${pi + 1} de ${paginas.length} · Folio ${folio}</div>`
       return `${abrir(head)}${filas}${cerrarTabla}${cierre}${pie}</div>`
     })
   }, [corteSeleccionado, filtroPersonal, esMonitor, usuario, registrosEnCorte, cats])
