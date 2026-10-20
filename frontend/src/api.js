@@ -63,7 +63,12 @@ export const api = {
   toggleUsuario: (id) => request(`/usuarios/${id}/activo`, { method: 'PUT' }),
   syncEstado: () => request('/sync/estado'),
   sync: (full = false) => request(`/sync${full ? '?full=1' : ''}`, { method: 'POST' }),
-  kpis: () => request('/kpis'),
+  kpis: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    ).toString()
+    return request(`/kpis${qs ? `?${qs}` : ''}`)
+  },
   correlativo: (serie) => request('/correlativos/siguiente', { method: 'POST', body: { serie } }),
   catalogos: () => request('/catalogos'),
   registros: (params = {}) => {
