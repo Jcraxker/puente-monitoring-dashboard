@@ -200,14 +200,14 @@ function hoyLocal() {
 function filaVaciaHTML(fechaStr, i, sombrear, estado) {
   const esNoDec = estado === 'nodeclarado'
   const bg = esNoDec ? 'background:#fecaca;' : (sombrear ? 'background:#f4f7fd;' : '')
-  const borde = esNoDec ? '#f87171' : '#e6e6e6'
+  const borde = esNoDec ? '#ef4444' : '#e6e6e6'
   const act = esNoDec
-    ? '<span style="color:#991b1b;font-weight:700">—</span>'
+    ? '<span style="color:#7f1d1d;font-weight:700">—</span>'
     : '<span style="color:#9ca3af">Pendiente</span>'
-  const bold = esNoDec ? 'font-weight:700;color:#991b1b;' : ''
+  const bold = esNoDec ? 'font-weight:700;color:#7f1d1d;' : ''
   return `
 <tr>
-  <td style="padding:9px 6px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;color:#991b1b;${bg}">${i + 1}</td>
+  <td style="padding:9px 6px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;color:#7f1d1d;${bg}">${i + 1}</td>
   <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;white-space:nowrap;${bg}${bold}">${formatFecha(new Date(fechaStr + 'T00:00:00'))}</td>
   <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;text-align:center;${bg}">—</td>
   <td style="padding:9px 8px;border-bottom:1px solid ${borde};vertical-align:middle;${bg}">${act}</td>
