@@ -17,17 +17,17 @@ export default function Login({ onLogin, errorExterno }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-primary dark:bg-fondo-gris px-4">
+      <div className="w-full max-w-md bg-superficie rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
           <img src="/logo-puente-icon.png" alt="Logo Puente" className="w-24 h-24 object-contain mx-auto mb-2" />
-          <div className="text-4xl font-extrabold text-primary tracking-wide" style={{ fontFamily: 'var(--font-heading)' }}>puente</div>
+          <div className="text-4xl font-extrabold text-acento tracking-wide" style={{ fontFamily: 'var(--font-heading)' }}>puente</div>
           <p className="text-texto-secundario text-sm mt-1">Monitoreo y Evaluación</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="text-coral text-sm text-center bg-[#fff3e6] p-2 rounded animate-fade-in">
+            <div className="text-coral text-sm text-center bg-coral-suave p-2 rounded animate-fade-in">
               {error}
             </div>
           )}
@@ -59,7 +59,7 @@ export default function Login({ onLogin, errorExterno }) {
                 type="button"
                 onClick={() => setVerClave(v => !v)}
                 title={verClave ? 'Ocultar contraseña' : 'Ver contraseña'}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-texto-secundario hover:text-primary rounded transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-texto-secundario hover:text-acento rounded transition-colors"
               >
                 {verClave ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ export default function Login({ onLogin, errorExterno }) {
           <button
             type="submit"
             disabled={cargando}
-            className="w-full py-3 bg-dorado text-primary rounded-lg font-semibold hover:bg-dorado-hover transition-colors focus:ring-2 focus:ring-dorado focus:ring-offset-2 disabled:opacity-60"
+            className="w-full py-3 bg-dorado text-sobre-dorado rounded-lg font-semibold hover:bg-dorado-hover transition-colors focus:ring-2 focus:ring-dorado focus:ring-offset-2 disabled:opacity-60"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             {cargando ? 'Verificando...' : 'Iniciar sesión'}

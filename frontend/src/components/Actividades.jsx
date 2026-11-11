@@ -128,11 +128,11 @@ function SelectorRango({ inicio, fin, onChangeInicio, onChangeFin }) {
     : inicio
       ? 'Selecciona la fecha final'
       : 'Selecciona la fecha de inicio'
-  const navCls = "w-9 h-9 flex items-center justify-center rounded-md border border-borde bg-white text-texto-secundario hover:bg-fondo-gris text-lg leading-none"
+  const navCls = "w-9 h-9 flex items-center justify-center rounded-md border border-borde bg-superficie text-texto-secundario hover:bg-superficie-hover text-lg leading-none"
   return (
     <div>
       <div className="text-sm font-medium text-texto capitalize mb-2">{texto}</div>
-      <div className="px-3 py-3 border border-borde rounded-xl bg-white shadow-sm">
+      <div className="px-3 py-3 border border-borde rounded-xl bg-superficie shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <button type="button" className={navCls} onClick={() => setVista(v => (v.m === 1 ? { y: v.y - 1, m: 12 } : { y: v.y, m: v.m - 1 }))}>‹</button>
           <div className="text-sm font-semibold text-texto capitalize">
@@ -155,10 +155,10 @@ function SelectorRango({ inicio, fin, onChangeInicio, onChangeFin }) {
             if (esInicioDia || esFinDia) {
               btnCls += ' bg-primary text-white font-semibold rounded-full shadow-sm'
             } else if (enMedio) {
-              btnCls += ' bg-primary/20 text-primary rounded-none'
+              btnCls += ' bg-primary/20 text-acento rounded-none'
               if (paso === 'fin') btnCls += ' font-medium'
             } else {
-              btnCls += ' text-texto hover:bg-fondo-gris rounded-full'
+              btnCls += ' text-texto hover:bg-superficie-hover rounded-full'
             }
             if (esHoy && !esInicioDia && !esFinDia) btnCls += ' ring-1 ring-primary ring-inset'
             return (
@@ -330,8 +330,8 @@ export default function Actividades({ usuario }) {
       <div className="space-y-1">
         {entregables.map((e, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
-            <span className={`w-4 h-4 rounded ${e.cumplido ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className={e.cumplido ? 'text-green-700' : 'text-red-700'}>
+            <span className={`w-4 h-4 rounded ${e.cumplido ? 'bg-exito' : 'bg-peligro'}`} />
+            <span className={e.cumplido ? 'text-exito' : 'text-peligro'}>
               {e.nombre} <span className="text-texto-secundario">(máx: {formatFechaCorta(e.fechaMaxima)})</span>
             </span>
           </div>
@@ -356,7 +356,7 @@ export default function Actividades({ usuario }) {
     return (
       <div className="flex gap-2">
         {validFotos.map((foto, i) => (
-          <button key={i} onClick={() => abrirFoto(foto)} className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+          <button key={i} onClick={() => abrirFoto(foto)} className="px-3 py-1 text-xs bg-info-suave text-info rounded hover:bg-superficie-hover transition-colors">
             Foto {i + 1}
           </button>
         ))}
@@ -367,7 +367,7 @@ export default function Actividades({ usuario }) {
   const renderField = (label, value, condition = true) => {
     if (!condition || value === null || value === undefined || value === '' || value === '-') return null
     return (
-      <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 py-1 border-b border-[#d6d6d6] last:border-0">
+      <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 py-1 border-b border-borde-fuerte last:border-0">
         <span className="text-xs text-texto-secundario font-medium w-full sm:w-32 flex-shrink-0">{label}:</span>
         <span className="text-sm text-texto flex-1">{value}</span>
       </div>
@@ -385,8 +385,8 @@ export default function Actividades({ usuario }) {
   const renderContador = (label, value) => {
     if (!value || value <= 0) return null
     return (
-      <div className="bg-fondo-gris rounded-lg px-3 py-2 text-center">
-        <div className="text-lg font-bold text-primary">{value}</div>
+      <div className="bg-superficie-alt rounded-lg px-3 py-2 text-center">
+        <div className="text-lg font-bold text-acento">{value}</div>
         <div className="text-[11px] text-texto-secundario leading-tight">{label}</div>
       </div>
     )
@@ -402,13 +402,13 @@ export default function Actividades({ usuario }) {
       </div>
 
       {errorCarga && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+        <div className="bg-peligro-suave border border-peligro-borde text-peligro text-sm rounded-lg px-4 py-3">
           No se pudieron cargar los datos: {errorCarga}
         </div>
       )}
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg border border-borde border-t-2 border-t-dorado p-4 space-y-4">
+      <div className="bg-superficie rounded-lg border border-borde border-t-2 border-t-dorado p-4 space-y-4">
         {/* Buscador — ancho completo */}
         <div className="relative">
           <label className="block text-xs font-medium text-texto-secundario mb-1">Buscar</label>
@@ -433,7 +433,7 @@ export default function Actividades({ usuario }) {
             <select
               value={filtroTipo}
               onChange={(e) => { setFiltroTipo(e.target.value); setPage(1) }}
-              className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-white"
+              className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-superficie"
             >
               <option value="">Todos</option>
               <option value="Actividad">Actividad</option>
@@ -453,7 +453,7 @@ export default function Actividades({ usuario }) {
                     setFiltroPersonal('')
                     setPage(1)
                   }}
-                  className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-white"
+                  className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-superficie"
                 >
                   <option value="">Todos</option>
                   {DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -465,7 +465,7 @@ export default function Actividades({ usuario }) {
                 <select
                   value={filtroComunidad}
                   onChange={(e) => { setFiltroComunidad(e.target.value); setPage(1) }}
-                  className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-white"
+                  className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-superficie"
                 >
                   <option value="">Todas</option>
                   {comunidadesFiltradas.map(c => <option key={c} value={c}>{c}</option>)}
@@ -477,7 +477,7 @@ export default function Actividades({ usuario }) {
                 <select
                   value={filtroPersonal}
                   onChange={(e) => { setFiltroPersonal(e.target.value); setPage(1) }}
-                  className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-white"
+                  className="w-full px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-superficie"
                 >
                   <option value="">Todos</option>
                   {['Técnico SEA', 'Gestor Comunitario'].map(rol => {
@@ -505,7 +505,7 @@ export default function Actividades({ usuario }) {
                       className={`px-2.5 py-1 rounded-md text-xs border transition-colors ${
                         presetSeleccionado === p.id
                           ? 'bg-primary text-white border-primary'
-                          : 'bg-white text-texto-secundario border-borde hover:bg-fondo-gris'
+                          : 'bg-superficie text-texto-secundario border-borde hover:bg-superficie-hover'
                       }`}
                     >
                       {p.label}
@@ -517,7 +517,7 @@ export default function Actividades({ usuario }) {
                     className={`px-2.5 py-1 rounded-md text-xs border flex items-center gap-1 transition-colors ${
                   showCalendario
                     ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-texto-secundario border-borde hover:bg-fondo-gris'
+                    : 'bg-superficie text-texto-secundario border-borde hover:bg-superficie-hover'
                 }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -529,7 +529,7 @@ export default function Actividades({ usuario }) {
                 <button
                   type="button"
                   onClick={() => { setFiltroFechaInicio(''); setFiltroFechaFin(''); setPresetSeleccionado(''); setShowCalendario(false); setPage(1) }}
-                  className="px-2.5 py-1 rounded-md text-xs border border-borde bg-white text-texto-secundario hover:bg-fondo-gris"
+                  className="px-2.5 py-1 rounded-md text-xs border border-borde bg-superficie text-texto-secundario hover:bg-superficie-hover"
                 >
                   Limpiar
                 </button>
@@ -537,7 +537,7 @@ export default function Actividades({ usuario }) {
             </div>
 
             {showCalendario && (
-              <div className="mt-2 p-2 border border-borde rounded-lg bg-fondo-gris max-w-xs">
+              <div className="mt-2 p-2 border border-borde rounded-lg bg-superficie-alt max-w-xs">
                 <SelectorRango
                   inicio={filtroFechaInicio}
                   fin={filtroFechaFin}
@@ -553,10 +553,10 @@ export default function Actividades({ usuario }) {
       </div>
 
       {/* Tabla — Desktop (≥768px) */}
-      <div className="hidden md:block bg-white rounded-lg border border-borde">
+      <div className="hidden md:block bg-superficie rounded-lg border border-borde">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
-            <thead className="bg-fondo-gris border-b border-borde">
+            <thead className="bg-superficie-alt border-b border-borde">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-texto-secundario uppercase tracking-wider">Día</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-texto-secundario uppercase tracking-wider">Fecha</th>
@@ -568,7 +568,7 @@ export default function Actividades({ usuario }) {
                 <th className="px-4 py-3 text-center text-xs font-semibold text-texto-secundario uppercase tracking-wider">Tipo</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#d6d6d6]">
+            <tbody className="divide-y divide-borde-fuerte">
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center text-texto-secundario">No hay actividades</td>
@@ -577,7 +577,7 @@ export default function Actividades({ usuario }) {
                 paginated.map((item) => (
                   <React.Fragment key={item.id}>
                     <tr
-                      className={`hover:bg-fondo-gris cursor-pointer transition-colors ${item.tipoRegistro === 'Permiso' ? 'bg-red-50' : ''} ${expandedId === item.id ? 'bg-blue-50' : ''}`}
+                      className={`hover:bg-superficie-hover cursor-pointer transition-colors ${item.tipoRegistro === 'Permiso' ? 'bg-peligro-suave' : ''} ${expandedId === item.id ? 'bg-info-suave' : ''}`}
                       onClick={() => toggleExpand(item.id)}
                     >
                       <td className="px-4 py-3 text-sm font-medium text-texto">{item.dia}</td>
@@ -586,19 +586,19 @@ export default function Actividades({ usuario }) {
                       <td className="px-4 py-3 text-sm text-texto">{item.departamento}</td>
                       <td className="px-4 py-3 text-sm text-texto">{item.comunidad}</td>
                       <td className="px-4 py-3 text-sm text-texto max-w-xs truncate" title={item.actividad}>{item.actividad}</td>
-                      <td className="px-4 py-3 text-center text-sm font-medium text-primary">Q{item.viatico.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-center text-sm font-medium text-acento">Q{item.viatico.toLocaleString()}</td>
                       <td className="px-4 py-3 text-center">
                         {item.tipoRegistro === 'Permiso' ? (
-                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-[#fff3e6] text-coral">Permiso</span>
+                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-coral-suave text-coral">Permiso</span>
                         ) : (
-                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-[#f0e6f6] text-fucsia">Actividad</span>
+                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-fucsia-suave text-fucsia">Actividad</span>
                         )}
                       </td>
                     </tr>
                     {expandedId === item.id && (
-                      <tr className="bg-fondo-gris border-t-2 border-primary">
+                      <tr className="bg-superficie-alt border-t-2 border-primary">
                         <td colSpan={8} className="px-4 py-4">
-                          <div className="p-4 bg-white rounded-lg border border-borde space-y-4">
+                          <div className="p-4 bg-superficie rounded-lg border border-borde space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                               <div className="space-y-1">
                                 {renderField('Día', item.dia)}
@@ -660,7 +660,7 @@ export default function Actividades({ usuario }) {
                               </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 pt-2 border-t border-[#d6d6d6]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 pt-2 border-t border-borde-fuerte">
                               <div>
                                 <span className="text-xs text-texto-secundario font-medium">Entregables:</span>
                                 <div className="mt-1">{renderEntregables(item.entregables)}</div>
@@ -686,8 +686,8 @@ export default function Actividades({ usuario }) {
           <div className="px-4 py-3 border-t border-borde flex items-center justify-between">
             <p className="text-sm text-texto-secundario">Página {page} de {totalPages} — {filtered.length} resultados</p>
             <div className="flex gap-1">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-fondo-gris transition-colors">Anterior</button>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-fondo-gris transition-colors">Siguiente</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-superficie-hover transition-colors">Anterior</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-superficie-hover transition-colors">Siguiente</button>
             </div>
           </div>
         )}
@@ -696,7 +696,7 @@ export default function Actividades({ usuario }) {
       {/* Cards — Móvil (<768px) */}
       <div className="md:hidden space-y-3">
         {paginated.length === 0 ? (
-          <div className="bg-white rounded-lg border border-borde px-4 py-12 text-center text-texto-secundario">
+          <div className="bg-superficie rounded-lg border border-borde px-4 py-12 text-center text-texto-secundario">
             No hay actividades
           </div>
         ) : (
@@ -704,8 +704,8 @@ export default function Actividades({ usuario }) {
             <div
               key={item.id}
               onClick={() => toggleExpand(item.id)}
-              className={`bg-white rounded-lg border cursor-pointer transition-colors ${
-                item.tipoRegistro === 'Permiso' ? 'border-red-200 bg-red-50' : 'border-borde'
+              className={`bg-superficie rounded-lg border cursor-pointer transition-colors ${
+                item.tipoRegistro === 'Permiso' ? 'border-peligro-borde bg-peligro-suave' : 'border-borde'
               } ${expandedId === item.id ? 'ring-2 ring-primary border-primary' : ''}`}
             >
               <div className="p-4">
@@ -715,16 +715,16 @@ export default function Actividades({ usuario }) {
                     <span className="text-xs text-texto-secundario">{formatFechaCorta(item.fecha)}</span>
                   </div>
                   {item.tipoRegistro === 'Permiso' ? (
-                    <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-[#fff3e6] text-coral">Permiso</span>
+                    <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-coral-suave text-coral">Permiso</span>
                   ) : (
-                    <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-[#f0e6f6] text-fucsia">Actividad</span>
+                    <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-fucsia-suave text-fucsia">Actividad</span>
                   )}
                 </div>
                 <p className="text-sm text-texto font-medium mb-1">{item.personal}</p>
                 <p className="text-xs text-texto-secundario mb-2">{item.comunidad}</p>
                 <p className="text-sm text-texto line-clamp-2 mb-2">{item.actividad}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-primary">Q{item.viatico.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-acento">Q{item.viatico.toLocaleString()}</span>
                   <svg className={`w-4 h-4 text-texto-secundario transition-transform ${expandedId === item.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -732,7 +732,7 @@ export default function Actividades({ usuario }) {
               </div>
 
               {expandedId === item.id && (
-                <div className="px-4 pb-4 pt-2 border-t border-[#d6d6d6] space-y-2">
+                <div className="px-4 pb-4 pt-2 border-t border-borde-fuerte space-y-2">
                   {renderField('Fecha completa', formatFecha(item.fecha))}
                   {renderField('Localidad', item.departamento)}
                   {renderField('Rol', item.rol)}
@@ -777,8 +777,8 @@ export default function Actividades({ usuario }) {
           <div className="px-1 py-3 flex items-center justify-between">
             <p className="text-xs text-texto-secundario">{page}/{totalPages} — {filtered.length} res.</p>
             <div className="flex gap-1">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1.5 text-xs border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-fondo-gris transition-colors">Ant.</button>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1.5 text-xs border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-fondo-gris transition-colors">Sig.</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1.5 text-xs border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-superficie-hover transition-colors">Ant.</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1.5 text-xs border border-borde rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-superficie-hover transition-colors">Sig.</button>
             </div>
           </div>
         )}
