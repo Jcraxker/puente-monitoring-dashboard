@@ -45,7 +45,7 @@ app.put('/api/actividades/:id/anular', authRequired, requireRole('monitor'), del
 const { listViaticos } = require('./routes/viaticos');
 const { catalogos, registros } = require('./routes/registros');
 const { kpis } = require('./routes/kpis');
-const { siguiente: siguienteFolio } = require('./routes/correlativos');
+const { siguiente: siguienteFolio, devolver: devolverFolio } = require('./routes/correlativos');
 const { listUsuarios, createUsuario, updateUsuario, changePassword, toggleActivo } = require('./routes/usuarios');
 
 app.post('/api/sync', authRequired, requireRole('monitor'), syncNow);
@@ -57,6 +57,7 @@ app.get('/api/catalogos', authRequired, catalogos);
 app.get('/api/registros', authRequired, registros);
 app.get('/api/kpis', authRequired, kpis);
 app.post('/api/correlativos/siguiente', authRequired, siguienteFolio);
+app.post('/api/correlativos/devolver', authRequired, devolverFolio);
 
 app.get('/api/usuarios', authRequired, requireRole('monitor'), listUsuarios);
 app.post('/api/usuarios', authRequired, requireRole('monitor'), createUsuario);

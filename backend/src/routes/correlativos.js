@@ -23,4 +23,28 @@ async function siguiente(req, res) {
   }
 }
 
-module.exports = { siguiente };
+// Devuelve el ultimo folio emitido cuando la constancia no llego a generarse.
+// Solo retrocede si el folio sigue siendo el ultimo: evita corromper la serie.
+async function devolver(req, res) {
+  try {
+    const serie = String(req.body?.serie || '').toUpperCase().slice(0, 20);
+    const numero = Number(req.body?.numero);
+    if (!/^PV-\d{6}$/.test(serie) || !Number.isInteger(numero) || numero < 1) {
+      return res.status(400).json({ error: 'Serie o numero invalido' });
+    }
+    const { rows } = await pool.query(
+      'UPDATE correlativos SET ultimo = ultimo - 1, updated_at = CURRENT_TIMESTAMP WHERE serie = $1 AND ultimo = $2 RETURNING ultimo',
+      [serie, numero]
+    );
+    if (!rows.length) {
+      const actual = await pool.query('SELECT ultimo FROM correlativos WHERE serie = $1', [serie]);
+      return res.json({ serie, devuelto: false, ultimo: actual.rows[0]?.ultimo ?? null });
+    }
+    res.json({ serie, devuelto: true, ultimo: rows[0].ultimo });
+  } catch (err) {
+    console.error('correlativo devolver error', err);
+    res.status(500).json({ error: 'Error al devolver folio' });
+  }
+}
+
+module.exports = { siguiente, devolver };
