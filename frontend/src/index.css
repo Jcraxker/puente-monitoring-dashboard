@@ -1,7 +1,11 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap');
 
+/* El tema se controla con la clase .dark en <html>, no con el sistema. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
+  /* Marca */
   --color-primary: #124c91;
   --color-primary-hover: #0d3a70;
   --color-secondary: #2a9d8f;
@@ -9,15 +13,112 @@
   --color-dorado: #fcce01;
   --color-dorado-hover: #ecc30a;
   --color-coral: #fd7e2d;
+
+  /* Texto */
   --color-texto: #212121;
   --color-texto-secundario: #747474;
+  --color-texto-tenue: #b0b0b0;
+
+  /* Superficies */
+  --color-superficie: #ffffff;
+  --color-superficie-alt: #f7f7f7;
+  --color-superficie-hover: #f1f1f1;
   --color-borde: #e6e6e6;
+  --color-borde-fuerte: #d6d6d6;
   --color-fondo-gris: #f7f7f7;
   --color-fondo-seccion: #f1f1f1;
+
+  /* Acento: primary solo sirve sobre fondo claro; el texto usa acento */
+  --color-acento: #124c91;
+  /* Tinta sobre rellenos saturados (dorado): no cambia con el tema */
+  --color-sobre-dorado: #212121;
+
+  /* Tintes de marca */
+  --color-coral-suave: #fff3e6;
+  --color-fucsia-suave: #f0e6f6;
+
+  /* Estados */
+  --color-peligro: #b91c1c;
+  /* Relleno sólido con texto blanco: no cambia con el tema */
+  --color-peligro-fuerte: #dc2626;
+  --color-peligro-suave: #fef2f2;
+  --color-peligro-borde: #fecaca;
+  --color-exito: #15803d;
+  --color-exito-suave: #f0fdf4;
+  --color-exito-borde: #bbf7d0;
+  --color-info: #1d4ed8;
+  --color-info-suave: #eff6ff;
+  --color-info-borde: #bfdbfe;
+  --color-aviso: #92400e;
+  --color-aviso-suave: #fffbeb;
+  --color-aviso-borde: #fde68a;
 
   --font-heading: 'Montserrat', sans-serif;
   --font-body: 'Lato', sans-serif;
 }
+
+/*
+ * Modo oscuro: se redefinen las variables, no las clases.
+ * Tailwind compila bg-primary a var(--color-primary), así que todo cambia solo.
+ */
+.dark {
+  --color-primary: #2f6fb3;
+  --color-primary-hover: #3d82c9;
+  --color-secondary: #46b5a7;
+  --color-fucsia: #f65bb5;
+  --color-dorado: #ffd633;
+  --color-dorado-hover: #f0c400;
+  --color-coral: #ff9a5c;
+
+  --color-texto: #e8eaed;
+  --color-texto-secundario: #a0a6b0;
+  --color-texto-tenue: #6b7280;
+
+  --color-superficie: #1a1d23;
+  --color-superficie-alt: #111318;
+  --color-superficie-hover: #242932;
+  --color-borde: #2c313a;
+  --color-borde-fuerte: #3d434e;
+  --color-fondo-gris: #16191f;
+  --color-fondo-seccion: #1f242b;
+
+  --color-acento: #6aa9e6;
+
+  --color-coral-suave: #3a2418;
+  --color-fucsia-suave: #3a1a2c;
+
+  --color-peligro: #f87171;
+  --color-peligro-suave: #2e1515;
+  --color-peligro-borde: #7f1d1d;
+  --color-exito: #4ade80;
+  --color-exito-suave: #10261a;
+  --color-exito-borde: #166534;
+  --color-info: #7cb2f5;
+  --color-info-suave: #12233b;
+  --color-info-borde: #1e4a7a;
+  --color-aviso: #fbbf24;
+  --color-aviso-suave: #2a2110;
+  --color-aviso-borde: #78550c;
+
+  color-scheme: dark;
+}
+
+/*
+ * Puente temporal mientras Usuarios.jsx no esté migrado a tokens.
+ * Quitar al migrar ese archivo.
+ */
+.dark .bg-white { background-color: var(--color-superficie); }
+.dark .bg-gray-50 { background-color: var(--color-superficie-alt); }
+.dark .bg-gray-100 { background-color: var(--color-superficie-hover); }
+.dark .bg-gray-300 { background-color: var(--color-borde-fuerte); }
+.dark .text-gray-600 { color: var(--color-texto-secundario); }
+.dark .text-gray-300, .dark .text-gray-400 { color: var(--color-texto-tenue); }
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-borde); }
+.dark .bg-red-50 { background-color: var(--color-peligro-suave); }
+.dark .text-red-700 { color: var(--color-peligro); }
+.dark .border-red-200 { border-color: var(--color-peligro-borde); }
+.dark .text-primary { color: var(--color-acento); }
+.dark .hover\:text-primary:hover { color: var(--color-acento); }
 
 * {
   box-sizing: border-box;
@@ -27,6 +128,7 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-body);
+  background: var(--color-superficie-alt);
   color: var(--color-texto);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

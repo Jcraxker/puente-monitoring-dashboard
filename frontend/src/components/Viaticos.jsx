@@ -96,19 +96,19 @@ function escHtml(s) {
 }
 
 function CeldaDia({ monto, km, hayRegistro, esFuturo, esPasadoSinDeclarar }) {
-  if (esFuturo) return <span className="text-sm text-[#e0e0e0]">·</span>
+  if (esFuturo) return <span className="text-sm text-texto-tenue">·</span>
   if (esPasadoSinDeclarar) {
     return (
-      <span className="inline-block text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
+      <span className="inline-block text-[11px] font-semibold text-peligro bg-peligro-suave border border-peligro-borde rounded px-1.5 py-0.5">
         Sin declarar
       </span>
     )
   }
-  if (!hayRegistro) return <span className="text-sm font-medium text-[#d6d6d6]">—</span>
+  if (!hayRegistro) return <span className="text-sm font-medium text-texto-tenue">—</span>
   const t = textoDia({ monto, km, hayRegistro })
   if (t.clase === 'q') return <span className="text-sm font-medium text-texto">{t.texto}</span>
-  if (t.clase === 'km') return <span className="text-sm font-medium text-primary">{t.texto}</span>
-  return <span className="text-sm font-medium text-[#d6d6d6]">—</span>
+  if (t.clase === 'km') return <span className="text-sm font-medium text-acento">{t.texto}</span>
+  return <span className="text-sm font-medium text-texto-tenue">—</span>
 }
 
 function mapearViaticos(v) {
@@ -733,7 +733,7 @@ export default function Viaticos({ usuario }) {
           <button
             onClick={handleSyncRapido}
             disabled={sincronizando || cooldownRestante > 0}
-            className="px-4 py-2 bg-white border border-borde text-primary rounded-lg hover:bg-fondo-gris text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-superficie border border-borde text-acento rounded-lg hover:bg-superficie-hover text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {sincronizando ? (
               <>
@@ -755,7 +755,7 @@ export default function Viaticos({ usuario }) {
           <button onClick={handleExportPDF} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-medium transition-colors">
             {esMonitor && !filtroPersonal ? 'Descargar resumen de todos' : `Descargar resumen de ${filtroPersonal || usuario.nombre}`}
           </button>
-          <button onClick={handleImprimir} className="px-4 py-2 bg-white border border-borde text-texto rounded-lg hover:bg-fondo-gris text-sm font-medium transition-colors">
+          <button onClick={handleImprimir} className="px-4 py-2 bg-superficie border border-borde text-texto rounded-lg hover:bg-superficie-hover text-sm font-medium transition-colors">
             {esMonitor && !filtroPersonal ? 'Imprimir resumen de todos' : `Imprimir de ${filtroPersonal || usuario.nombre}`}
           </button>
         </div>
@@ -764,7 +764,7 @@ export default function Viaticos({ usuario }) {
       {/* Mensaje de sync */}
       {mensajeSync && (
         <div className={`rounded-lg p-3 text-sm font-medium flex items-center gap-2 ${
-          mensajeSync.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+          mensajeSync.tipo === 'exito' ? 'bg-exito-suave text-exito border border-exito-borde' : 'bg-peligro-suave text-peligro border border-peligro-borde'
         }`}>
           {mensajeSync.tipo === 'exito' ? (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -776,7 +776,7 @@ export default function Viaticos({ usuario }) {
       )}
 
       {/* Sección de Filtros */}
-      <div className="bg-white rounded-lg border border-borde border-t-2 border-t-dorado p-4">
+      <div className="bg-superficie rounded-lg border border-borde border-t-2 border-t-dorado p-4">
         <div className="flex items-center gap-2 mb-3">
           <svg className="w-4 h-4 text-texto-secundario" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -794,7 +794,7 @@ export default function Viaticos({ usuario }) {
                 const corte = cortesDisponibles.find(c => c.desde === e.target.value)
                 if (corte) setCorteSeleccionado(corte)
               }}
-              className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-white focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
+              className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-superficie focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
             >
               {cortesDisponibles.map(c => (
                 <option key={c.desde} value={c.desde}>{c.label}</option>
@@ -810,7 +810,7 @@ export default function Viaticos({ usuario }) {
               <select
                 value={filtroTipo}
                 onChange={(e) => setFiltroTipo(e.target.value)}
-                className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-white focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
+                className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-superficie focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
               >
                 <option value="">Todos</option>
                 <option value="Actividad">Actividad</option>
@@ -828,7 +828,7 @@ export default function Viaticos({ usuario }) {
                 <select
                   value={filtroDepartamento}
                   onChange={(e) => { setFiltroDepartamento(e.target.value); setFiltroPersonal('') }}
-                  className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-white focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
+                  className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-superficie focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
                 >
                   <option value="">Todos los departamentos</option>
                   {DEPARTAMENTOS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -841,7 +841,7 @@ export default function Viaticos({ usuario }) {
                 <select
                   value={filtroPersonal}
                   onChange={(e) => setFiltroPersonal(e.target.value)}
-                  className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-white focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
+                  className="w-full px-3 py-2 border border-borde rounded-lg text-sm bg-superficie focus:ring-2 focus:ring-dorado focus:border-dorado outline-none"
                 >
                   <option value="">-- Selecciona un colaborador --</option>
                   {['Técnico SEA', 'Gestor Comunitario'].map(rol => {
@@ -863,13 +863,13 @@ export default function Viaticos({ usuario }) {
       </div>
 
       {/* Toggle ampliar resumen */}
-      <div className="bg-white rounded-lg border border-borde p-4">
+      <div className="bg-superficie rounded-lg border border-borde p-4">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={ampliarResumen}
             onChange={(e) => setAmpliarResumen(e.target.checked)}
-            className="w-4 h-4 text-primary bg-fondo-gris border-borde rounded focus:ring-dorado focus:ring-2"
+            className="w-4 h-4 text-acento bg-superficie-alt border-borde rounded focus:ring-dorado focus:ring-2"
           />
           <span className="text-sm font-medium text-texto">Ampliar resumen</span>
         </label>
@@ -877,45 +877,45 @@ export default function Viaticos({ usuario }) {
 
       {/* Gate: sin personal seleccionado, mostrar mensaje */}
       {personalRequerido ? (
-        <div className="bg-primary/5 border border-blue-200 rounded-lg p-8 text-center">
-          <svg className="w-12 h-12 text-blue-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-primary/10 border border-info-borde rounded-lg p-8 text-center">
+          <svg className="w-12 h-12 text-acento mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          <h3 className="text-lg font-medium text-blue-800 mb-1" style={{ fontFamily: 'var(--font-heading)' }}>Selecciona un colaborador</h3>
-          <p className="text-sm text-primary">Para ver el reporte de viáticos, elige un departamento y luego selecciona a la persona en la sección de filtros de arriba.</p>
+          <h3 className="text-lg font-medium text-info mb-1" style={{ fontFamily: 'var(--font-heading)' }}>Selecciona un colaborador</h3>
+          <p className="text-sm text-acento">Para ver el reporte de viáticos, elige un departamento y luego selecciona a la persona en la sección de filtros de arriba.</p>
         </div>
       ) : ampliarResumen ? (
         /* Vista resumen — reemplaza la tabla */
-        <div className="bg-white rounded-lg border border-borde p-6">
+        <div className="bg-superficie rounded-lg border border-borde p-6">
           <h3 className="text-lg font-semibold text-texto mb-1" style={{ fontFamily: 'var(--font-heading)' }}>Resumen del corte {corteSeleccionado.label}</h3>
           {esMonitor && filtroPersonal && (
             <p className="text-sm text-texto-secundario mb-4">Colaborador: <span className="font-medium text-texto">{filtroPersonal}</span></p>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-xs text-green-700 font-medium mb-1">Actividades</div>
-              <div className="text-2xl font-bold text-green-700">{cantidadActividades}</div>
-              <div className="text-[11px] text-green-500 mt-0.5">registros tipo actividad</div>
+            <div className="bg-exito-suave rounded-lg p-4">
+              <div className="text-xs text-exito font-medium mb-1">Actividades</div>
+              <div className="text-2xl font-bold text-exito">{cantidadActividades}</div>
+              <div className="text-[11px] text-exito mt-0.5">registros tipo actividad</div>
             </div>
-            <div className="bg-[#fff3e6] rounded-lg p-4">
+            <div className="bg-coral-suave rounded-lg p-4">
               <div className="text-xs text-coral font-medium mb-1">Permisos</div>
               <div className="text-2xl font-bold text-coral">{cantidadPermisos}</div>
-              <div className="text-[11px] text-red-500 mt-0.5">registros tipo permiso</div>
+              <div className="text-[11px] text-coral mt-0.5">registros tipo permiso</div>
             </div>
-            <div className="bg-fondo-gris rounded-lg p-4">
+            <div className="bg-superficie-alt rounded-lg p-4">
               <div className="text-xs text-texto-secundario font-medium mb-1">Total registros</div>
               <div className="text-2xl font-bold text-texto">{registrosEnCorte.length}</div>
               <div className="text-[11px] text-texto-secundario mt-0.5">en este corte</div>
             </div>
-            <div className="bg-primary/5 rounded-lg p-4">
-              <div className="text-xs text-primary font-medium mb-1">Total corte</div>
-              <div className="text-2xl font-bold text-primary">Q{totalCorte.toLocaleString()}</div>
-              <div className="text-[11px] text-blue-500 mt-0.5">monto total en viáticos</div>
+            <div className="bg-primary/10 rounded-lg p-4">
+              <div className="text-xs text-acento font-medium mb-1">Total corte</div>
+              <div className="text-2xl font-bold text-acento">Q{totalCorte.toLocaleString()}</div>
+              <div className="text-[11px] text-info mt-0.5">monto total en viáticos</div>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-fondo-gris border-b border-borde">
+              <thead className="bg-superficie-alt border-b border-borde">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-texto-secundario">Fecha</th>
                   <th className="px-4 py-2 text-left text-xs font-semibold text-texto-secundario">Comunidad</th>
@@ -924,16 +924,16 @@ export default function Viaticos({ usuario }) {
                   <th className="px-4 py-2 text-right text-xs font-semibold text-texto-secundario">Viático</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-borde">
                 {registrosEnCorte
                   .sort((a, b) => a.fecha.localeCompare(b.fecha))
                   .map(r => (
-                    <tr key={r.id} className="hover:bg-fondo-gris">
+                    <tr key={r.id} className="hover:bg-superficie-hover">
                       <td className="px-4 py-2 text-texto">{formatFecha(new Date(r.fecha + 'T00:00:00'))}</td>
                       <td className="px-4 py-2 text-texto">{r.comunidad}</td>
                       <td className="px-4 py-2 text-texto">{r.actividad}</td>
                       <td className="px-4 py-2">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.tipo === 'Actividad' ? 'bg-[#f0e6f6] text-fucsia' : 'bg-[#fff3e6] text-coral'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.tipo === 'Actividad' ? 'bg-fucsia-suave text-fucsia' : 'bg-coral-suave text-coral'}`}>
                           {r.tipo}
                         </span>
                       </td>
@@ -941,10 +941,10 @@ export default function Viaticos({ usuario }) {
                     </tr>
                   ))}
               </tbody>
-              <tfoot className="bg-fondo-gris font-semibold">
+              <tfoot className="bg-superficie-alt font-semibold">
                 <tr>
-                  <td colSpan={4} className="px-4 py-2 text-primary font-semibold">TOTAL CORTE</td>
-                  <td className="px-4 py-2 text-right text-primary text-lg">Q{totalCorte.toLocaleString()}</td>
+                  <td colSpan={4} className="px-4 py-2 text-acento font-semibold">TOTAL CORTE</td>
+                  <td className="px-4 py-2 text-right text-acento text-lg">Q{totalCorte.toLocaleString()}</td>
                 </tr>
               </tfoot>
             </table>
@@ -953,10 +953,10 @@ export default function Viaticos({ usuario }) {
       ) : (
         <>
           {/* Tabla Desktop */}
-          <div className="hidden md:block bg-white rounded-lg border border-borde">
+          <div className="hidden md:block bg-superficie rounded-lg border border-borde">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[700px]">
-                <thead className="bg-fondo-gris border-b border-borde">
+                <thead className="bg-superficie-alt border-b border-borde">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-texto-secundario uppercase tracking-wider">Semana</th>
                     {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', ...(!ocultarSabDom ? ['Sáb', 'Dom'] : [])].map((dia, i) => (
@@ -965,18 +965,18 @@ export default function Viaticos({ usuario }) {
                     <th className="px-4 py-3 text-right text-xs font-semibold text-texto-secundario uppercase tracking-wider">Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-borde">
                   {semanas.map((semana, idx) => {
                     const diasVisibles = ocultarSabDom
                       ? semana.dias.filter(d => d.fecha.getDay() !== 0 && d.fecha.getDay() !== 6)
                       : semana.dias
                     return (
-                      <tr key={idx} className="hover:bg-fondo-gris">
+                      <tr key={idx} className="hover:bg-superficie-hover">
                         <td className="px-4 py-3 text-sm font-medium text-texto whitespace-nowrap">
                           S{idx + 1} ({formatFecha(semana.inicio)} — {formatFecha(semana.fin)})
                         </td>
                         {diasVisibles.map((d) => (
-                          <td key={d.fechaStr} className={`px-3 py-3 text-center ${!d.dentroRango ? 'bg-[#f0f0f0]' : ''} ${d.soloPermiso ? 'bg-[#fff3e6]/50' : ''}`}>
+                          <td key={d.fechaStr} className={`px-3 py-3 text-center ${!d.dentroRango ? 'bg-superficie-alt' : ''} ${d.soloPermiso ? 'bg-coral-suave/50' : ''}`}>
                             {d.dentroRango ? (
                               d.soloPermiso ? (
                                 <span className="text-xs text-coral font-medium italic">Permiso</span>
@@ -984,21 +984,21 @@ export default function Viaticos({ usuario }) {
                                 <CeldaDia monto={d.monto} km={d.km} hayRegistro={d.hayRegistro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
                               )
                             ) : (
-                              <span className="text-[10px] text-[#b0b0b0]">—</span>
+                              <span className="text-[10px] text-texto-tenue">—</span>
                             )}
                           </td>
                         ))}
-                        <td className="px-4 py-3 text-right text-sm font-semibold text-primary whitespace-nowrap">
+                        <td className="px-4 py-3 text-right text-sm font-semibold text-acento whitespace-nowrap">
                           Q{semana.total.toLocaleString()}
                           {semana.totalKm > 0 && <span className="block text-xs font-normal text-texto-secundario">{semana.totalKm} km</span>}
                         </td>
                       </tr>
                     )
                   })}
-                  <tr className="bg-fondo-gris font-semibold">
-                    <td className="px-4 py-3 text-primary font-semibold">TOTAL CORTE</td>
+                  <tr className="bg-superficie-alt font-semibold">
+                    <td className="px-4 py-3 text-acento font-semibold">TOTAL CORTE</td>
                     <td colSpan={ocultarSabDom ? 5 : 7} />
-                    <td className="px-4 py-3 text-right text-primary text-lg whitespace-nowrap">
+                    <td className="px-4 py-3 text-right text-acento text-lg whitespace-nowrap">
                       Q{totalCorte.toLocaleString()}
                       {totalKmCorte > 0 && <span className="block text-xs font-normal text-texto-secundario">{totalKmCorte} km</span>}
                     </td>
@@ -1011,10 +1011,10 @@ export default function Viaticos({ usuario }) {
           {/* Cards Móvil */}
           <div className="md:hidden space-y-3">
             {semanas.map((semana, idx) => (
-              <div key={idx} className="bg-white rounded-lg border border-borde p-4">
+              <div key={idx} className="bg-superficie rounded-lg border border-borde p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold text-texto">Semana {idx + 1}</span>
-                  <span className="text-sm font-bold text-primary text-right">
+                  <span className="text-sm font-bold text-acento text-right">
                     Q{semana.total.toLocaleString()}
                     {semana.totalKm > 0 && <span className="block text-xs font-normal text-texto-secundario">{semana.totalKm} km</span>}
                   </span>
@@ -1025,7 +1025,7 @@ export default function Viaticos({ usuario }) {
                     ? semana.dias.filter(d => d.fecha.getDay() !== 0 && d.fecha.getDay() !== 6)
                     : semana.dias
                   ).map((d) => (
-                    <div key={d.fechaStr} className={`text-xs rounded p-1.5 ${!d.dentroRango ? 'bg-[#f0f0f0] opacity-60' : ''} ${d.soloPermiso ? 'bg-[#fff3e6]/50' : ''}`}>
+                    <div key={d.fechaStr} className={`text-xs rounded p-1.5 ${!d.dentroRango ? 'bg-superficie-alt opacity-60' : ''} ${d.soloPermiso ? 'bg-coral-suave/50' : ''}`}>
                       <div className="text-texto-secundario font-medium">{d.dia}</div>
                       {d.dentroRango ? (
                         d.soloPermiso ? (
@@ -1036,16 +1036,16 @@ export default function Viaticos({ usuario }) {
                           </div>
                         )
                       ) : (
-                        <div className="text-[10px] text-[#b0b0b0] mt-0.5">—</div>
+                        <div className="text-[10px] text-texto-tenue mt-0.5">—</div>
                       )}
                     </div>
                   ))}
                 </div>
               </div>
             ))}
-            <div className="bg-fondo-gris rounded-lg border border-borde p-4 flex items-center justify-between">
-              <span className="text-sm font-bold text-primary">TOTAL CORTE</span>
-              <span className="text-lg font-bold text-primary text-right">
+            <div className="bg-superficie-alt rounded-lg border border-borde p-4 flex items-center justify-between">
+              <span className="text-sm font-bold text-acento">TOTAL CORTE</span>
+              <span className="text-lg font-bold text-acento text-right">
                 Q{totalCorte.toLocaleString()}
                 {totalKmCorte > 0 && <span className="block text-xs font-normal text-texto-secundario">{totalKmCorte} km</span>}
               </span>
@@ -1054,7 +1054,7 @@ export default function Viaticos({ usuario }) {
         </>
       )}
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+      <div className="bg-aviso-suave border border-aviso-borde rounded-lg p-4 text-sm text-aviso">
         <strong>Nota:</strong> Los viáticos se calculan automáticamente desde las actividades registradas por cada técnico.
       </div>
     </div>

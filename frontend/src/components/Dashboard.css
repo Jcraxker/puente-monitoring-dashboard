@@ -140,6 +140,20 @@ tr {
 
 /* ===== PRINT ===== */
 @media print {
+  /* La constancia y cualquier impresión salen siempre en claro */
+  .dark {
+    --color-superficie: #ffffff;
+    --color-superficie-alt: #ffffff;
+    --color-superficie-hover: #f1f1f1;
+    --color-texto: #212121;
+    --color-texto-secundario: #747474;
+    --color-texto-tenue: #b0b0b0;
+    --color-borde: #e6e6e6;
+    --color-borde-fuerte: #d6d6d6;
+    --color-primary: #124c91;
+    --color-acento: #124c91;
+  }
+
   .sidebar,
   .sidebar-overlay,
   .mobile-header,

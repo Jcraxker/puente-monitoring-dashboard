@@ -47,7 +47,7 @@ export default function KPIs({ usuario }) {
           <select
             value={filtroProyecto}
             onChange={(e) => setFiltroProyecto(e.target.value)}
-            className="sm:ml-auto px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-white"
+            className="sm:ml-auto px-3 py-2 border border-borde rounded-lg focus:ring-2 focus:ring-dorado focus:border-dorado outline-none text-sm bg-superficie"
           >
             <option value="todos">Todos los proyectos</option>
             <option value="Chimaltenango">Chimaltenango</option>
@@ -60,25 +60,25 @@ export default function KPIs({ usuario }) {
       {cargando && <p className="text-sm text-texto-secundario">Cargando indicadores...</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, index) => (
-          <div key={kpi.label} className={`animate-scale-in delay-${index * 50} bg-white rounded-lg border border-borde p-5 transition-shadow duration-200 hover:shadow-md`}>
+          <div key={kpi.label} className={`animate-scale-in delay-${index * 50} bg-superficie rounded-lg border border-borde p-5 transition-shadow duration-200 hover:shadow-md`}>
             <div className="flex items-center justify-between">
               <p className="text-sm text-texto-secundario font-medium">{kpi.label}</p>
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-fondo-gris text-texto-secundario">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-superficie-alt text-texto-secundario">
                 {kpi.change}
               </span>
             </div>
-            <p className="text-3xl font-bold text-primary mt-2" style={{ fontFamily: 'var(--font-heading)' }}>{kpi.value}</p>
+            <p className="text-3xl font-bold text-acento mt-2" style={{ fontFamily: 'var(--font-heading)' }}>{kpi.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-lg border border-borde p-5">
+      <div className="bg-superficie rounded-lg border border-borde p-5">
         <h3 className="text-lg font-medium text-texto mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Actividades por Personal</h3>
         <div className="space-y-3">
           {(datos?.porPersonal || []).map((t) => (
             <div key={t.nombre} className="flex items-center gap-3">
               <div className="w-32 text-sm font-medium text-texto truncate">{t.nombre}</div>
-              <div className="flex-1 h-3 bg-fondo-gris rounded-full overflow-hidden flex">
+              <div className="flex-1 h-3 bg-superficie-alt rounded-full overflow-hidden flex">
                 <div className="h-full bg-primary rounded-full" style={{ width: `${(t.total / maxPersonal) * 100}%` }} />
               </div>
               <div className="w-24 text-sm text-texto-secundario text-right">{t.total}</div>
@@ -87,12 +87,12 @@ export default function KPIs({ usuario }) {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-borde p-5">
+      <div className="bg-superficie rounded-lg border border-borde p-5">
         <h3 className="text-lg font-medium text-texto mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Actividades por Comunidad</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {(datos?.porComunidad || []).map((z) => (
-            <div key={z.comunidad} className="p-4 bg-fondo-gris rounded-lg">
-              <p className="text-lg font-semibold text-primary truncate" style={{ fontFamily: 'var(--font-heading)' }}>{z.comunidad}</p>
+            <div key={z.comunidad} className="p-4 bg-superficie-alt rounded-lg">
+              <p className="text-lg font-semibold text-acento truncate" style={{ fontFamily: 'var(--font-heading)' }}>{z.comunidad}</p>
               <p className="text-2xl font-bold text-texto mt-1" style={{ fontFamily: 'var(--font-heading)' }}>{z.total}</p>
               <p className="text-sm text-texto-secundario">actividades</p>
             </div>

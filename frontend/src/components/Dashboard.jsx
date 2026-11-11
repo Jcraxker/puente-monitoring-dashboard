@@ -4,7 +4,28 @@ import KPIs from './KPIs'
 import Viaticos from './Viaticos'
 import Sync from './Sync'
 import Usuarios from './Usuarios'
+import { getTema, setTema as guardarTema, TEMAS, ETIQUETAS_TEMA } from '../theme'
 import './Dashboard.css'
+
+const ICONOS_TEMA = {
+  claro: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" />
+      <path strokeLinecap="round" d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" />
+    </svg>
+  ),
+  oscuro: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+    </svg>
+  ),
+  sistema: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="2.5" y="4" width="19" height="13" rx="2" />
+      <path strokeLinecap="round" d="M8 21h8M12 17v4" />
+    </svg>
+  ),
+}
 
 const MENU_ITEMS = [
   {
@@ -65,10 +86,21 @@ export default function Dashboard({ usuario, onLogout }) {
   const [activeTab, setActiveTab] = useState('actividades')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [tema, setTemaActual] = useState(getTema)
   const sidebarRef = useRef(null)
   const timeoutRef = useRef(null)
 
   const permisos = ROL_PERMISOS[usuario.rol] || []
+
+  const cambiarTema = useCallback((nuevo) => {
+    guardarTema(nuevo)
+    setTemaActual(nuevo)
+  }, [])
+
+  const ciclarTema = useCallback(() => {
+    const i = TEMAS.indexOf(tema)
+    cambiarTema(TEMAS[(i + 1) % TEMAS.length])
+  }, [tema, cambiarTema])
 
   const selectTab = useCallback((id) => {
     setActiveTab(id)
@@ -117,7 +149,7 @@ export default function Dashboard({ usuario, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-fondo-gris">
+    <div className="min-h-screen bg-superficie-alt">
       {/* ===== OVERLAY MÓVIL ===== */}
       <div
         className={`sidebar-overlay lg:hidden ${mobileOpen ? 'sidebar-overlay--visible' : ''}`}
@@ -129,7 +161,7 @@ export default function Dashboard({ usuario, onLogout }) {
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`sidebar fixed inset-y-0 left-0 z-40 bg-white border-r border-borde ${
+        className={`sidebar fixed inset-y-0 left-0 z-40 bg-superficie border-r border-borde ${
           mobileOpen ? 'sidebar--mobile-open' : ''
         } ${expanded ? 'sidebar--expanded' : ''}`}
       >
@@ -156,8 +188,8 @@ export default function Dashboard({ usuario, onLogout }) {
                   onClick={() => selectTab(item.id)}
                   className={`nav-btn w-full text-left py-2.5 rounded-lg text-sm font-medium flex items-center gap-3 px-3 ${
                     activeTab === item.id
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-texto-secundario hover:bg-fondo-gris'
+                      ? 'bg-primary/10 text-acento'
+                      : 'text-texto-secundario hover:bg-superficie-hover'
                   }`}
                 >
                   <span className="flex-shrink-0 w-10 flex justify-center">{item.icon}</span>
@@ -171,11 +203,28 @@ export default function Dashboard({ usuario, onLogout }) {
           <div className="sidebar__footer-full p-4 border-t border-borde flex-shrink-0">
             <div className="flex items-center justify-between text-xs mb-3">
               <span className="font-medium text-texto truncate">{usuario.nombre}</span>
-              <span className="px-2 py-0.5 bg-fondo-gris text-texto-secundario rounded capitalize flex-shrink-0 ml-2">{usuario.rol}</span>
+              <span className="px-2 py-0.5 bg-superficie-alt text-texto-secundario rounded capitalize flex-shrink-0 ml-2">{usuario.rol}</span>
+            </div>
+            <div className="flex gap-1 p-1 mb-3 bg-superficie-alt border border-borde rounded-lg" role="group" aria-label="Tema de la interfaz">
+              {TEMAS.map((opcion) => (
+                <button
+                  key={opcion}
+                  onClick={() => cambiarTema(opcion)}
+                  aria-pressed={tema === opcion}
+                  title={ETIQUETAS_TEMA[opcion]}
+                  className={`flex-1 flex items-center justify-center py-1.5 rounded-md transition-colors ${
+                    tema === opcion
+                      ? 'bg-superficie text-acento shadow-sm'
+                      : 'text-texto-secundario hover:text-texto'
+                  }`}
+                >
+                  {ICONOS_TEMA[opcion]}
+                </button>
+              ))}
             </div>
             <button
               onClick={onLogout}
-              className="w-full px-3 py-2 text-sm text-coral hover:bg-[#fff3e6] rounded-lg flex items-center justify-center gap-2"
+              className="w-full px-3 py-2 text-sm text-coral hover:bg-coral-suave rounded-lg flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -185,13 +234,21 @@ export default function Dashboard({ usuario, onLogout }) {
           </div>
           {/* Mini footer colapsado */}
           <div className="sidebar__footer-mini p-2 border-t border-borde flex-shrink-0 flex-col items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center" title={`${usuario.nombre} (${usuario.rol})`}>
+            <span className="w-8 h-8 rounded-full bg-primary/10 text-acento text-xs font-bold flex items-center justify-center" title={`${usuario.nombre} (${usuario.rol})`}>
               {usuario.nombre.charAt(0).toUpperCase()}
             </span>
             <button
+              onClick={ciclarTema}
+              title={`Tema: ${ETIQUETAS_TEMA[tema]}`}
+              aria-label={`Tema: ${ETIQUETAS_TEMA[tema]}. Cambiar tema`}
+              className="p-2 text-texto-secundario hover:text-acento hover:bg-superficie-hover rounded-lg"
+            >
+              {ICONOS_TEMA[tema]}
+            </button>
+            <button
               onClick={onLogout}
               title="Cerrar sesión"
-              className="p-2 text-coral hover:bg-[#fff3e6] rounded-lg"
+              className="p-2 text-coral hover:bg-coral-suave rounded-lg"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -234,7 +291,7 @@ export default function Dashboard({ usuario, onLogout }) {
 
         <footer className="p-4 lg:p-8 text-center border-t border-borde">
           <p className="text-xs text-texto-secundario">
-            Diseñado por <span className="font-semibold text-texto">Jack Fallas</span> — github: <a href="https://github.com/JCraxker" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">JCraxker</a> — contacto: <a href="mailto:jack.a.fallas@gmail.com" className="text-primary hover:underline">jack.a.fallas@gmail.com</a>
+            Diseñado por <span className="font-semibold text-texto">Jack Fallas</span> — github: <a href="https://github.com/JCraxker" target="_blank" rel="noopener noreferrer" className="text-acento hover:underline">JCraxker</a> — contacto: <a href="mailto:jack.a.fallas@gmail.com" className="text-acento hover:underline">jack.a.fallas@gmail.com</a>
           </p>
         </footer>
       </div>
