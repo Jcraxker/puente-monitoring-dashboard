@@ -103,23 +103,6 @@
   color-scheme: dark;
 }
 
-/*
- * Puente temporal mientras Usuarios.jsx no esté migrado a tokens.
- * Quitar al migrar ese archivo.
- */
-.dark .bg-white { background-color: var(--color-superficie); }
-.dark .bg-gray-50 { background-color: var(--color-superficie-alt); }
-.dark .bg-gray-100 { background-color: var(--color-superficie-hover); }
-.dark .bg-gray-300 { background-color: var(--color-borde-fuerte); }
-.dark .text-gray-600 { color: var(--color-texto-secundario); }
-.dark .text-gray-300, .dark .text-gray-400 { color: var(--color-texto-tenue); }
-.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-borde); }
-.dark .bg-red-50 { background-color: var(--color-peligro-suave); }
-.dark .text-red-700 { color: var(--color-peligro); }
-.dark .border-red-200 { border-color: var(--color-peligro-borde); }
-.dark .text-primary { color: var(--color-acento); }
-.dark .hover\:text-primary:hover { color: var(--color-acento); }
-
 * {
   box-sizing: border-box;
 }
