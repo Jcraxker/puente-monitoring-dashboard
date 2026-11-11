@@ -78,10 +78,15 @@ function formatFecha(fecha) {
   return `${fecha.getDate()} ${meses[fecha.getMonth()]}`
 }
 
-function textoDia(r) {
-  if (r.tipo === 'Permiso') return { texto: 'Permiso', clase: 'permiso' }
-  if (r.viatico > 0) return { texto: `Q${r.viatico.toLocaleString()}`, clase: 'q' }
-  if (r.kilometros > 0) return { texto: `${r.kilometros} km`, clase: 'km' }
+function redondearKm(v) {
+  return Math.round((Number(v) || 0) * 10) / 10
+}
+
+// Un dia puede tener varios registros: se muestra el total del dia, no el primero.
+function textoDia({ monto, km, hayRegistro }) {
+  if (!hayRegistro) return { texto: '—', clase: 'vacio' }
+  if (monto > 0) return { texto: `Q${monto.toLocaleString()}`, clase: 'q' }
+  if (km > 0) return { texto: `${redondearKm(km)} km`, clase: 'km' }
   return { texto: '—', clase: 'vacio' }
 }
 
@@ -90,7 +95,7 @@ function escHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
 
-function CeldaDia({ registro, esFuturo, esPasadoSinDeclarar }) {
+function CeldaDia({ monto, km, hayRegistro, esFuturo, esPasadoSinDeclarar }) {
   if (esFuturo) return <span className="text-sm text-[#e0e0e0]">·</span>
   if (esPasadoSinDeclarar) {
     return (
@@ -99,8 +104,8 @@ function CeldaDia({ registro, esFuturo, esPasadoSinDeclarar }) {
       </span>
     )
   }
-  if (!registro) return <span className="text-sm font-medium text-[#d6d6d6]">—</span>
-  const t = textoDia(registro)
+  if (!hayRegistro) return <span className="text-sm font-medium text-[#d6d6d6]">—</span>
+  const t = textoDia({ monto, km, hayRegistro })
   if (t.clase === 'q') return <span className="text-sm font-medium text-texto">{t.texto}</span>
   if (t.clase === 'km') return <span className="text-sm font-medium text-primary">{t.texto}</span>
   return <span className="text-sm font-medium text-[#d6d6d6]">—</span>
@@ -159,13 +164,13 @@ function filaDatoHTML(r, i, sombrear) {
   <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;word-wrap:break-word;${bg}">${escHtml(r.actividad)}</td>
   <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:center;${bg}">${r.tipo}</td>
   <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;font-weight:600;${bg}">${viaticoTxt}</td>
-  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">${r.kilometros > 0 ? `${r.kilometros} km` : '-'}</td>
+  <td style="padding:9px 8px;border-bottom:1px solid #e6e6e6;vertical-align:middle;text-align:right;${bg}">${r.kilometros > 0 ? `${redondearKm(r.kilometros)} km` : '-'}</td>
 </tr>`
 }
 
 function filaSubtotalHTML(nombre, tq, tk) {
-  const txt = tq > 0 && tk > 0 ? `Q${tq.toLocaleString('es-GT')} · ${tk} km`
-    : tq > 0 ? `Q${tq.toLocaleString('es-GT')}` : tk > 0 ? `${tk} km` : '—'
+  const txt = tq > 0 && tk > 0 ? `Q${tq.toLocaleString('es-GT')} · ${redondearKm(tk)} km`
+    : tq > 0 ? `Q${tq.toLocaleString('es-GT')}` : tk > 0 ? `${redondearKm(tk)} km` : '—'
   return `
 <tr><td colspan="7" style="background:#e8eefa;padding:7px 8px;text-align:right;font-weight:700;font-size:9pt;border-bottom:2px solid #124c91">
   Subtotal ${escHtml(nombre)}: <span style="color:#124c91">${txt}</span>
@@ -364,21 +369,27 @@ export default function Viaticos({ usuario }) {
       const diasConMontos = sem.dias.map(dia => {
         const fechaStr = dia.toISOString().split('T')[0]
         const dentroRango = fechaStr >= corteSeleccionado.desde && fechaStr <= corteSeleccionado.hasta
-        const registro = registrosEnSemana.find(r => r.fecha === fechaStr)
+        // Suma todos los registros del dia (una persona puede declarar varias actividades).
+        const regsDia = registrosEnSemana.filter(r => r.fecha === fechaStr)
+        const monto = regsDia.reduce((acc, r) => acc + r.viatico, 0)
+        const km = redondearKm(regsDia.reduce((acc, r) => acc + (r.kilometros || 0), 0))
+        const hayRegistro = regsDia.length > 0
+        const soloPermiso = hayRegistro && regsDia.every(r => r.tipo === 'Permiso')
         const ahora = new Date()
         const hoyStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`
         const esFuturo = fechaStr > hoyStr
         const esHoy = fechaStr === hoyStr
         const esFinDe = dia.getDay() === 0 || dia.getDay() === 6
-        const esPasadoSinDeclarar = dentroRango && !esFuturo && !esHoy && !esFinDe && !registro
+        const esPasadoSinDeclarar = dentroRango && !esFuturo && !esHoy && !esFinDe && !hayRegistro
         return {
           fecha: dia,
           fechaStr,
           dia: formatDia(dia),
-          monto: registro ? registro.viatico : 0,
-          km: registro ? (registro.kilometros || 0) : 0,
+          monto,
+          km,
+          hayRegistro,
+          soloPermiso,
           dentroRango,
-          registro,
           esFuturo,
           esPasadoSinDeclarar,
         }
@@ -386,7 +397,7 @@ export default function Viaticos({ usuario }) {
 
       const enRango = diasConMontos.filter(d => d.dentroRango)
       const totalDentroRango = enRango.reduce((acc, d) => acc + d.monto, 0)
-      const totalKm = enRango.reduce((acc, d) => acc + d.km, 0)
+      const totalKm = redondearKm(enRango.reduce((acc, d) => acc + d.km, 0))
 
       return {
         inicio: sem.inicio,
@@ -399,7 +410,7 @@ export default function Viaticos({ usuario }) {
   }, [corteSeleccionado, registrosVisibles])
 
   const totalCorte = semanas.reduce((acc, s) => acc + s.total, 0)
-  const totalKmCorte = semanas.reduce((acc, s) => acc + (s.totalKm || 0), 0)
+  const totalKmCorte = redondearKm(semanas.reduce((acc, s) => acc + (s.totalKm || 0), 0))
 
   const personalRequerido = esMonitor && !filtroPersonal
 
@@ -446,7 +457,7 @@ export default function Viaticos({ usuario }) {
     const deptoTxt = infoPersonal ? (infoPersonal.departamento || '') : ''
     const registrosSorted = registrosEnCorte.slice().sort((a, b) => a.fecha.localeCompare(b.fecha))
     const totalGeneral = registrosSorted.reduce((acc, r) => acc + r.viatico, 0)
-    const totalKm = registrosSorted.reduce((acc, r) => acc + (r.kilometros || 0), 0)
+    const totalKm = redondearKm(registrosSorted.reduce((acc, r) => acc + (r.kilometros || 0), 0))
 
     const headFull = `
   <div style="text-align:center;margin-bottom:8px">
@@ -481,7 +492,7 @@ export default function Viaticos({ usuario }) {
     <tfoot><tr style="background:#e8eefa">
       <td colspan="5" style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt">${esResumenGeneral ? 'TOTAL GENERAL' : 'TOTAL'}</td>
       <td style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt;color:#124c91">Q${totalGeneral.toLocaleString('es-GT')}</td>
-      <td style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt;color:#124c91">${totalKm > 0 ? `${totalKm} km` : '-'}</td>
+      <td style="padding:10px 8px;border-top:2px solid #124c91;text-align:right;font-weight:700;font-size:10pt;color:#124c91">${totalKm > 0 ? `${redondearKm(totalKm)} km` : '-'}</td>
     </tr></tfoot>`
     const firmas = esResumenGeneral ? '' : `
   <div style="display:flex;justify-content:space-between;margin-top:36px;padding:0 8px">
@@ -491,9 +502,9 @@ export default function Viaticos({ usuario }) {
   </div>`
     const cierreExtras = `
   ${esResumenGeneral ? `<div style="border:2px solid #124c91;border-radius:8px;padding:10px 16px;text-align:center;margin:10px 0 8px;background:#f4f7fd">
-    <span style="font-size:12pt;font-weight:700;color:#124c91">Total Q: Q${totalGeneral.toLocaleString('es-GT')}${totalKm > 0 ? ` · Total km: ${totalKm} km` : ''}</span><div style="font-size:7.5pt;color:#747474;margin-top:4px">Los kilometros son distancia en vehiculo propio y no suman quetzales</div>
+    <span style="font-size:12pt;font-weight:700;color:#124c91">Total Q: Q${totalGeneral.toLocaleString('es-GT')}${totalKm > 0 ? ` · Total km: ${redondearKm(totalKm)} km` : ''}</span><div style="font-size:7.5pt;color:#747474;margin-top:4px">Los kilometros son distancia en vehiculo propio y no suman quetzales</div>
   </div>` : ''}
-  ${firmas}</div>`
+  ${firmas}`
 
     // Unidades indivisibles: encabezados de grupo + filas + cierre
     const modoPersona = (regs) => {
@@ -525,7 +536,7 @@ export default function Viaticos({ usuario }) {
       for (const nombre of Object.keys(grupos).sort()) {
         const regs = grupos[nombre]
         const tq = regs.reduce((a, r) => a + r.viatico, 0)
-        const tk = regs.reduce((a, r) => a + (r.kilometros || 0), 0)
+        const tk = redondearKm(regs.reduce((a, r) => a + (r.kilometros || 0), 0))
         const sub = tq > 0 && tk > 0 ? `${modoPersona(regs)} · Q${tq.toLocaleString('es-GT')} · ${tk} km`
           : tq > 0 ? `${modoPersona(regs)} · Q${tq.toLocaleString('es-GT')}`
           : tk > 0 ? `${modoPersona(regs)} · ${tk} km` : modoPersona(regs)
@@ -628,12 +639,14 @@ export default function Viaticos({ usuario }) {
   }, [corteSeleccionado, filtroPersonal, esMonitor, usuario, registrosEnCorte, cats])
 
   const handleExportPDF = useCallback(async () => {
+    const serie = `PV-${corteSeleccionado.desde.slice(0, 7).replace('-', '')}`
+    let folioPedido = null
     try {
-      const serie = `PV-${corteSeleccionado.desde.slice(0, 7).replace('-', '')}`
       let folio = null
       try {
         const r = await api.correlativo(serie)
         folio = r.folio
+        folioPedido = r
       } catch {
         folio = null
       }
@@ -646,7 +659,9 @@ export default function Viaticos({ usuario }) {
       const paginasHTML = construirPaginas(folio)
       const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'letter', compress: true })
       const pageW = pdf.internal.pageSize.getWidth()
+      const pageH = pdf.internal.pageSize.getHeight()
       const imgW = pageW - 30
+      const maxH = pageH - 30
       const totalPages = paginasHTML.length
       for (let p = 0; p < totalPages; p++) {
         if (p > 0) pdf.addPage()
@@ -657,24 +672,28 @@ export default function Viaticos({ usuario }) {
         const canvas = await html2canvas(container, { scale: 1.25, useCORS: true, backgroundColor: '#ffffff' })
         document.body.removeChild(container)
         const imgH = (canvas.height * imgW) / canvas.width
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 15, 15, imgH)
+        const escala = imgH > maxH ? maxH / imgH : 1
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 15, 15, imgW * escala, imgH * escala)
       }
 
       pdf.save(`viaticos_${personalNombre.replace(/\s+/g, '_')}_${corteSeleccionado.label.replace(/\s+/g, '_')}.pdf`)
     } catch (err) {
       console.error('Error al generar PDF:', err)
+      if (folioPedido) api.devolverCorrelativo(serie, folioPedido.numero).catch(() => {})
       alert('Error al generar PDF: ' + err.message)
     }
   }, [construirPaginas, corteSeleccionado, filtroPersonal, esMonitor, usuario])
 
   const handleImprimir = useCallback(async () => {
     const win = window.open('', '_blank')
+    const serie = `PV-${corteSeleccionado.desde.slice(0, 7).replace('-', '')}`
+    let folioPedido = null
     try {
-      const serie = `PV-${corteSeleccionado.desde.slice(0, 7).replace('-', '')}`
       let folio = null
       try {
         const r = await api.correlativo(serie)
         folio = r.folio
+        folioPedido = r
       } catch {
         folio = null
       }
@@ -686,9 +705,12 @@ export default function Viaticos({ usuario }) {
         win.document.close()
         win.focus()
         setTimeout(() => win.print(), 400)
+      } else if (folioPedido) {
+        api.devolverCorrelativo(serie, folioPedido.numero).catch(() => {})
       }
     } catch (err) {
       if (win) win.close()
+      if (folioPedido) api.devolverCorrelativo(serie, folioPedido.numero).catch(() => {})
       alert('Error al preparar impresion: ' + err.message)
     }
   }, [construirPaginas, corteSeleccionado])
@@ -954,12 +976,12 @@ export default function Viaticos({ usuario }) {
                           S{idx + 1} ({formatFecha(semana.inicio)} — {formatFecha(semana.fin)})
                         </td>
                         {diasVisibles.map((d) => (
-                          <td key={d.fechaStr} className={`px-3 py-3 text-center ${!d.dentroRango ? 'bg-[#f0f0f0]' : ''} ${d.registro && d.registro.tipo === 'Permiso' ? 'bg-[#fff3e6]/50' : ''}`}>
+                          <td key={d.fechaStr} className={`px-3 py-3 text-center ${!d.dentroRango ? 'bg-[#f0f0f0]' : ''} ${d.soloPermiso ? 'bg-[#fff3e6]/50' : ''}`}>
                             {d.dentroRango ? (
-                              d.registro && d.registro.tipo === 'Permiso' ? (
+                              d.soloPermiso ? (
                                 <span className="text-xs text-coral font-medium italic">Permiso</span>
                               ) : (
-                                <CeldaDia registro={d.registro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
+                                <CeldaDia monto={d.monto} km={d.km} hayRegistro={d.hayRegistro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
                               )
                             ) : (
                               <span className="text-[10px] text-[#b0b0b0]">—</span>
@@ -1003,14 +1025,14 @@ export default function Viaticos({ usuario }) {
                     ? semana.dias.filter(d => d.fecha.getDay() !== 0 && d.fecha.getDay() !== 6)
                     : semana.dias
                   ).map((d) => (
-                    <div key={d.fechaStr} className={`text-xs rounded p-1.5 ${!d.dentroRango ? 'bg-[#f0f0f0] opacity-60' : ''} ${d.registro && d.registro.tipo === 'Permiso' ? 'bg-[#fff3e6]/50' : ''}`}>
+                    <div key={d.fechaStr} className={`text-xs rounded p-1.5 ${!d.dentroRango ? 'bg-[#f0f0f0] opacity-60' : ''} ${d.soloPermiso ? 'bg-[#fff3e6]/50' : ''}`}>
                       <div className="text-texto-secundario font-medium">{d.dia}</div>
                       {d.dentroRango ? (
-                        d.registro && d.registro.tipo === 'Permiso' ? (
+                        d.soloPermiso ? (
                           <div className="text-[10px] text-coral font-medium italic mt-0.5">Permiso</div>
                         ) : (
                           <div className="font-semibold mt-0.5">
-                            <CeldaDia registro={d.registro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
+                            <CeldaDia monto={d.monto} km={d.km} hayRegistro={d.hayRegistro} esFuturo={d.esFuturo} esPasadoSinDeclarar={d.esPasadoSinDeclarar} />
                           </div>
                         )
                       ) : (

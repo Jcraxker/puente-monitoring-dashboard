@@ -70,6 +70,7 @@ export const api = {
     return request(`/kpis${qs ? `?${qs}` : ''}`)
   },
   correlativo: (serie) => request('/correlativos/siguiente', { method: 'POST', body: { serie } }),
+  devolverCorrelativo: (serie, numero) => request('/correlativos/devolver', { method: 'POST', body: { serie, numero } }),
   catalogos: () => request('/catalogos'),
   registros: (params = {}) => {
     const qs = new URLSearchParams(
